@@ -123,12 +123,16 @@ async def get_class(class_name: ClassName):
 
 # Path and Query operators example
 @app.get("/students/{degree_name}")
-async def get_students_in_degree(degree_name: DegreeName, semester: int = 1):
-    if degree_name is DegreeName.bachelor and semester > 6:
+async def get_students_in_degree(degree_name: DegreeName, semester: int | None = None):
+    if degree_name is DegreeName.bachelor and semester is int and semester > 6:
         return {"message": "Bachelor degree has only 6 semesters"}
-    elif degree_name is DegreeName.master and semester > 4:
+    elif degree_name is DegreeName.master and semester is int and semester > 4:
         return {"message": "Master degree has only 4 semesters"}
 
-    filtered_students = filter(lambda student: student["degree"] == degree_name and student["semester"] == semester, fake_students_db)
+    filtered_students = filter(lambda student: student["degree"] == degree_name, fake_students_db)
+
+    if semester is not None:
+        print("Filtering by semester")
+        filtered_students = filter(lambda student: student["semester"] == semester, fake_students_db)
 
     return list(filtered_students)
