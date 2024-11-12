@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from enum import Enum
+from pydantic import BaseModel
 
 class ClassName(str, Enum):
     son = "Specjalistyczne Oprogramowanie Narzędziowe"
@@ -9,96 +10,102 @@ class DegreeName(str, Enum):
     master = "Master"
     bachelor = "Bachelor"
 
+class Student(BaseModel):
+    name: str
+    surname: str
+    degree: DegreeName
+    semester: int
+
 fake_students_db = [
-    {"name": "John", "surname": "Owens", "degree": "Bachelor", "semester": 3},
-    {"name": "Jane", "surname": "Doe", "degree": "Bachelor", "semester": 1},
-    {"name": "Alice", "surname": "Smith", "degree": "Bachelor", "semester": 2},
-    {"name": "Bob", "surname": "Brown", "degree": "Bachelor", "semester": 4},
-    {"name": "Charlie", "surname": "Davis", "degree": "Bachelor", "semester": 5},
-    {"name": "Eve", "surname": "Miller", "degree": "Bachelor", "semester": 6},
-    {"name": "Frank", "surname": "Wilson", "degree": "Bachelor", "semester": 3},
-    {"name": "Grace", "surname": "Moore", "degree": "Bachelor", "semester": 1},
-    {"name": "Hank", "surname": "Taylor", "degree": "Bachelor", "semester": 2},
-    {"name": "Ivy", "surname": "Anderson", "degree": "Bachelor", "semester": 4},
-    {"name": "Jack", "surname": "Thomas", "degree": "Bachelor", "semester": 5},
-    {"name": "Kara", "surname": "Jackson", "degree": "Bachelor", "semester": 6},
-    {"name": "Leo", "surname": "White", "degree": "Bachelor", "semester": 3},
-    {"name": "Mia", "surname": "Harris", "degree": "Bachelor", "semester": 1},
-    {"name": "Nina", "surname": "Martin", "degree": "Bachelor", "semester": 2},
-    {"name": "Oscar", "surname": "Thompson", "degree": "Bachelor", "semester": 4},
-    {"name": "Paul", "surname": "Garcia", "degree": "Bachelor", "semester": 5},
-    {"name": "Quinn", "surname": "Martinez", "degree": "Bachelor", "semester": 6},
-    {"name": "Rose", "surname": "Robinson", "degree": "Bachelor", "semester": 3},
-    {"name": "Sam", "surname": "Clark", "degree": "Bachelor", "semester": 1},
-    {"name": "Tina", "surname": "Rodriguez", "degree": "Bachelor", "semester": 2},
-    {"name": "Uma", "surname": "Lewis", "degree": "Bachelor", "semester": 4},
-    {"name": "Vince", "surname": "Lee", "degree": "Bachelor", "semester": 5},
-    {"name": "Wendy", "surname": "Walker", "degree": "Bachelor", "semester": 6},
-    {"name": "Xander", "surname": "Hall", "degree": "Bachelor", "semester": 3},
-    {"name": "Yara", "surname": "Allen", "degree": "Bachelor", "semester": 1},
-    {"name": "Zane", "surname": "Young", "degree": "Bachelor", "semester": 2},
-    {"name": "Amy", "surname": "King", "degree": "Bachelor", "semester": 4},
-    {"name": "Brian", "surname": "Scott", "degree": "Bachelor", "semester": 5},
-    {"name": "Cathy", "surname": "Green", "degree": "Bachelor", "semester": 6},
-    {"name": "David", "surname": "Adams", "degree": "Bachelor", "semester": 3},
-    {"name": "Ella", "surname": "Baker", "degree": "Bachelor", "semester": 1},
-    {"name": "Fiona", "surname": "Gonzalez", "degree": "Bachelor", "semester": 2},
-    {"name": "George", "surname": "Nelson", "degree": "Bachelor", "semester": 4},
-    {"name": "Holly", "surname": "Carter", "degree": "Bachelor", "semester": 5},
-    {"name": "Ian", "surname": "Mitchell", "degree": "Bachelor", "semester": 6},
-    {"name": "Jill", "surname": "Perez", "degree": "Bachelor", "semester": 3},
-    {"name": "Kyle", "surname": "Roberts", "degree": "Bachelor", "semester": 1},
-    {"name": "Liam", "surname": "Turner", "degree": "Bachelor", "semester": 2},
-    {"name": "Mona", "surname": "Phillips", "degree": "Bachelor", "semester": 4},
-    {"name": "Nate", "surname": "Campbell", "degree": "Bachelor", "semester": 5},
-    {"name": "Olivia", "surname": "Parker", "degree": "Bachelor", "semester": 6},
-    {"name": "Pete", "surname": "Evans", "degree": "Bachelor", "semester": 3},
-    {"name": "Quincy", "surname": "Edwards", "degree": "Bachelor", "semester": 1},
-    {"name": "Rachel", "surname": "Collins", "degree": "Bachelor", "semester": 2},
-    {"name": "Steve", "surname": "Stewart", "degree": "Bachelor", "semester": 4},
-    {"name": "Tara", "surname": "Sanchez", "degree": "Bachelor", "semester": 5},
-    {"name": "Ursula", "surname": "Morris", "degree": "Bachelor", "semester": 6},
-    {"name": "Victor", "surname": "Rogers", "degree": "Bachelor", "semester": 3},
-    {"name": "Wade", "surname": "Reed", "degree": "Bachelor", "semester": 1},
-    {"name": "Xena", "surname": "Cook", "degree": "Bachelor", "semester": 2},
-    {"name": "Yvonne", "surname": "Morgan", "degree": "Bachelor", "semester": 4},
-    {"name": "Zach", "surname": "Bell", "degree": "Bachelor", "semester": 5},
-    {"name": "Aaron", "surname": "Murphy", "degree": "Master", "semester": 1},
-    {"name": "Betty", "surname": "Bailey", "degree": "Master", "semester": 2},
-    {"name": "Carl", "surname": "Rivera", "degree": "Master", "semester": 3},
-    {"name": "Diana", "surname": "Cooper", "degree": "Master", "semester": 4},
-    {"name": "Ethan", "surname": "Richardson", "degree": "Master", "semester": 1},
-    {"name": "Faye", "surname": "Cox", "degree": "Master", "semester": 2},
-    {"name": "Gina", "surname": "Howard", "degree": "Master", "semester": 3},
-    {"name": "Hugo", "surname": "Ward", "degree": "Master", "semester": 4},
-    {"name": "Iris", "surname": "Torres", "degree": "Master", "semester": 1},
-    {"name": "Jake", "surname": "Peterson", "degree": "Master", "semester": 2},
-    {"name": "Kara", "surname": "Gray", "degree": "Master", "semester": 3},
-    {"name": "Lana", "surname": "Ramirez", "degree": "Master", "semester": 4},
-    {"name": "Mike", "surname": "James", "degree": "Master", "semester": 1},
-    {"name": "Nora", "surname": "Watson", "degree": "Master", "semester": 2},
-    {"name": "Omar", "surname": "Brooks", "degree": "Master", "semester": 3},
-    {"name": "Paula", "surname": "Kelly", "degree": "Master", "semester": 4},
-    {"name": "Quinn", "surname": "Sanders", "degree": "Master", "semester": 1},
-    {"name": "Rita", "surname": "Price", "degree": "Master", "semester": 2},
-    {"name": "Sean", "surname": "Bennett", "degree": "Master", "semester": 3},
-    {"name": "Tina", "surname": "Wood", "degree": "Master", "semester": 4},
-    {"name": "Uma", "surname": "Barnes", "degree": "Master", "semester": 1},
-    {"name": "Vince", "surname": "Ross", "degree": "Master", "semester": 2},
-    {"name": "Wendy", "surname": "Henderson", "degree": "Master", "semester": 3},
-    {"name": "Xander", "surname": "Coleman", "degree": "Master", "semester": 4},
-    {"name": "Yara", "surname": "Jenkins", "degree": "Master", "semester": 1},
-    {"name": "Zane", "surname": "Perry", "degree": "Master", "semester": 2},
-    {"name": "Amy", "surname": "Powell", "degree": "Master", "semester": 3},
-    {"name": "Brian", "surname": "Long", "degree": "Master", "semester": 4},
-    {"name": "Cathy", "surname": "Patterson", "degree": "Master", "semester": 1},
-    {"name": "David", "surname": "Hughes", "degree": "Master", "semester": 2},
-    {"name": "Ella", "surname": "Flores", "degree": "Master", "semester": 3},
-    {"name": "Fiona", "surname": "Washington", "degree": "Master", "semester": 4},
-    {"name": "George", "surname": "Butler", "degree": "Master", "semester": 1},
-    {"name": "Holly", "surname": "Simmons", "degree": "Master", "semester": 2},
-    {"name": "Ian", "surname": "Foster", "degree": "Master", "semester": 3},
-    {"name": "Jill", "surname": "Gonzales", "degree": "Master", "semester": 4}
+    Student(name="John", surname="Owens", degree=DegreeName.bachelor, semester=3),
+    Student(name="Jane", surname="Doe", degree=DegreeName.bachelor, semester=1),
+    Student(name="Alice", surname="Smith", degree=DegreeName.bachelor, semester=2),
+    Student(name="Bob", surname="Brown", degree=DegreeName.bachelor, semester=4),
+    Student(name="Charlie", surname="Davis", degree=DegreeName.bachelor, semester=5),
+    Student(name="Eve", surname="Miller", degree=DegreeName.bachelor, semester=6),
+    Student(name="Frank", surname="Wilson", degree=DegreeName.bachelor, semester=3),
+    Student(name="Grace", surname="Moore", degree=DegreeName.bachelor, semester=1),
+    Student(name="Hank", surname="Taylor", degree=DegreeName.bachelor, semester=2),
+    Student(name="Ivy", surname="Anderson", degree=DegreeName.bachelor, semester=4),
+    Student(name="Jack", surname="Thomas", degree=DegreeName.bachelor, semester=5),
+    Student(name="Kara", surname="Jackson", degree=DegreeName.bachelor, semester=6),
+    Student(name="Leo", surname="White", degree=DegreeName.bachelor, semester=3),
+    Student(name="Mia", surname="Harris", degree=DegreeName.bachelor, semester=1),
+    Student(name="Nina", surname="Martin", degree=DegreeName.bachelor, semester=2),
+    Student(name="Oscar", surname="Thompson", degree=DegreeName.bachelor, semester=4),
+    Student(name="Paul", surname="Garcia", degree=DegreeName.bachelor, semester=5),
+    Student(name="Quinn", surname="Martinez", degree=DegreeName.bachelor, semester=6),
+    Student(name="Rose", surname="Robinson", degree=DegreeName.bachelor, semester=3),
+    Student(name="Sam", surname="Clark", degree=DegreeName.bachelor, semester=1),
+    Student(name="Tina", surname="Rodriguez", degree=DegreeName.bachelor, semester=2),
+    Student(name="Uma", surname="Lewis", degree=DegreeName.bachelor, semester=4),
+    Student(name="Vince", surname="Lee", degree=DegreeName.bachelor, semester=5),
+    Student(name="Wendy", surname="Walker", degree=DegreeName.bachelor, semester=6),
+    Student(name="Xander", surname="Hall", degree=DegreeName.bachelor, semester=3),
+    Student(name="Yara", surname="Allen", degree=DegreeName.bachelor, semester=1),
+    Student(name="Zane", surname="Young", degree=DegreeName.bachelor, semester=2),
+    Student(name="Amy", surname="King", degree=DegreeName.bachelor, semester=4),
+    Student(name="Brian", surname="Scott", degree=DegreeName.bachelor, semester=5),
+    Student(name="Cathy", surname="Green", degree=DegreeName.bachelor, semester=6),
+    Student(name="David", surname="Adams", degree=DegreeName.bachelor, semester=3),
+    Student(name="Ella", surname="Baker", degree=DegreeName.bachelor, semester=1),
+    Student(name="Fiona", surname="Gonzalez", degree=DegreeName.bachelor, semester=2),
+    Student(name="George", surname="Nelson", degree=DegreeName.bachelor, semester=4),
+    Student(name="Holly", surname="Carter", degree=DegreeName.bachelor, semester=5),
+    Student(name="Ian", surname="Mitchell", degree=DegreeName.bachelor, semester=6),
+    Student(name="Jill", surname="Perez", degree=DegreeName.bachelor, semester=3),
+    Student(name="Kyle", surname="Roberts", degree=DegreeName.bachelor, semester=1),
+    Student(name="Liam", surname="Turner", degree=DegreeName.bachelor, semester=2),
+    Student(name="Mona", surname="Phillips", degree=DegreeName.bachelor, semester=4),
+    Student(name="Nate", surname="Campbell", degree=DegreeName.bachelor, semester=5),
+    Student(name="Olivia", surname="Parker", degree=DegreeName.bachelor, semester=6),
+    Student(name="Pete", surname="Evans", degree=DegreeName.bachelor, semester=3),
+    Student(name="Quincy", surname="Edwards", degree=DegreeName.bachelor, semester=1),
+    Student(name="Rachel", surname="Collins", degree=DegreeName.bachelor, semester=2),
+    Student(name="Steve", surname="Stewart", degree=DegreeName.bachelor, semester=4),
+    Student(name="Tara", surname="Sanchez", degree=DegreeName.bachelor, semester=5),
+    Student(name="Ursula", surname="Morris", degree=DegreeName.bachelor, semester=6),
+    Student(name="Victor", surname="Rogers", degree=DegreeName.bachelor, semester=3),
+    Student(name="Wade", surname="Reed", degree=DegreeName.bachelor, semester=1),
+    Student(name="Xena", surname="Cook", degree=DegreeName.bachelor, semester=2),
+    Student(name="Yvonne", surname="Morgan", degree=DegreeName.bachelor, semester=4),
+    Student(name="Zach", surname="Bell", degree=DegreeName.bachelor, semester=5),
+    Student(name="Aaron", surname="Murphy", degree=DegreeName.master, semester=1),
+    Student(name="Betty", surname="Bailey", degree=DegreeName.master, semester=2),
+    Student(name="Carl", surname="Rivera", degree=DegreeName.master, semester=3),
+    Student(name="Diana", surname="Cooper", degree=DegreeName.master, semester=4),
+    Student(name="Ethan", surname="Richardson", degree=DegreeName.master, semester=1),
+    Student(name="Faye", surname="Cox", degree=DegreeName.master, semester=2),
+    Student(name="Gina", surname="Howard", degree=DegreeName.master, semester=3),
+    Student(name="Hugo", surname="Ward", degree=DegreeName.master, semester=4),
+    Student(name="Iris", surname="Torres", degree=DegreeName.master, semester=1),
+    Student(name="Jake", surname="Peterson", degree=DegreeName.master, semester=2),
+    Student(name="Kara", surname="Gray", degree=DegreeName.master, semester=3),
+    Student(name="Lana", surname="Ramirez", degree=DegreeName.master, semester=4),
+    Student(name="Mike", surname="James", degree=DegreeName.master, semester=1),
+    Student(name="Nora", surname="Watson", degree=DegreeName.master, semester=2),
+    Student(name="Omar", surname="Brooks", degree=DegreeName.master, semester=3),
+    Student(name="Paula", surname="Kelly", degree=DegreeName.master, semester=4),
+    Student(name="Quinn", surname="Sanders", degree=DegreeName.master, semester=1),
+    Student(name="Rita", surname="Price", degree=DegreeName.master, semester=2),
+    Student(name="Sean", surname="Bennett", degree=DegreeName.master, semester=3),
+    Student(name="Tina", surname="Wood", degree=DegreeName.master, semester=4),
+    Student(name="Uma", surname="Barnes", degree=DegreeName.master, semester=1),
+    Student(name="Vince", surname="Ross", degree=DegreeName.master, semester=2),
+    Student(name="Wendy", surname="Henderson", degree=DegreeName.master, semester=3),
+    Student(name="Xander", surname="Coleman", degree=DegreeName.master, semester=4),
+    Student(name="Yara", surname="Jenkins", degree=DegreeName.master, semester=1),
+    Student(name="Zane", surname="Perry", degree=DegreeName.master, semester=2),
+    Student(name="Amy", surname="Powell", degree=DegreeName.master, semester=3),
+    Student(name="Brian", surname="Long", degree=DegreeName.master, semester=4),
+    Student(name="Cathy", surname="Patterson", degree=DegreeName.master, semester=1),
+    Student(name="David", surname="Hughes", degree=DegreeName.master, semester=2),
+    Student(name="Ella", surname="Flores", degree=DegreeName.master, semester=3),
+    Student(name="Fiona", surname="Washington", degree=DegreeName.master, semester=4),
+    Student(name="George", surname="Butler", degree=DegreeName.master, semester=1),
+    Student(name="Holly", surname="Simmons", degree=DegreeName.master, semester=2),
+    Student(name="Ian", surname="Foster", degree=DegreeName.master, semester=3),
+    Student(name="Jill", surname="Gonzales", degree=DegreeName.master, semester=4)
 ]
 
 app = FastAPI()
@@ -123,16 +130,20 @@ async def get_class(class_name: ClassName):
 
 # Path and Query operators example
 @app.get("/students/{degree_name}")
-async def get_students_in_degree(degree_name: DegreeName, semester: int | None = None):
+async def get_students_in_degree(degree_name: DegreeName, semester: int | None = None) -> list[Student]:
     if degree_name is DegreeName.bachelor and semester is int and semester > 6:
         return {"message": "Bachelor degree has only 6 semesters"}
     elif degree_name is DegreeName.master and semester is int and semester > 4:
         return {"message": "Master degree has only 4 semesters"}
 
-    filtered_students = filter(lambda student: student["degree"] == degree_name, fake_students_db)
+    filtered_students = filter(lambda student: student.degree == degree_name, fake_students_db)
 
     if semester is not None:
-        print("Filtering by semester")
-        filtered_students = filter(lambda student: student["semester"] == semester, fake_students_db)
+        filtered_students = filter(lambda student: student.semester == semester, fake_students_db)
 
     return list(filtered_students)
+
+@app.post("/students/")
+async def add_student(student: Student) -> list[Student]:
+    fake_students_db.append(student)
+    return fake_students_db
