@@ -10,3 +10,5 @@ maybe Docker and some other stuff. For students to look into, and look as a refe
 
 1. Clone the repository
 2. Install the requirements with `pip install -r requirements.txt`
+
+![Meme](snake-meme.jpg)
