@@ -3,22 +3,7 @@ from enum import Enum
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 
-class ClassName(str, Enum):
-    son = "Specjalistyczne Oprogramowanie Narzędziowe"
-    dpp = "Dobre Praktyki Programowania"
-
-class DegreeName(str, Enum):
-    master = "Master"
-    bachelor = "Bachelor"
-
-class BaseStudent(BaseModel):
-    name: str
-    surname: str
-    degree: DegreeName
-    semester: int
-
-class Student(BaseStudent):
-    id: int
+from ..common.models import Student, DegreeName, BaseStudent
 
 fake_students_db = [
     Student(id=1, name="John", surname="Owens", degree=DegreeName.bachelor, semester=3),
@@ -120,16 +105,6 @@ async def root():
 @app.get("/users/{user_id}")
 async def get_user_by_id(user_id: int):
     return {"user_id": user_id}
-
-# Path parameters example
-@app.get("/classes/{class_name}")
-async def get_class(class_name: ClassName):
-    if class_name is ClassName.son:
-        return {"model_name": class_name, "message": "Licencjat for the win!"}
-    elif class_name is ClassName.dpp:
-        return {"model_name": class_name, "message": "Magisterka for the win!"}
-
-    return  {"model_name": class_name, "message": "No win for you :("}
 
 # Path and Query operators example
 @app.get("/students/{degree_name}")
