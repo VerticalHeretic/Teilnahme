@@ -98,11 +98,10 @@ class TestStudentsOperations:
         students_storage = MockStudentsStorage([student])
         students_operations = StudentsOperations(students_storage)
 
-        updated_student = student
-        updated_student.name = "Jane"
+        updated_student = BaseStudent(name="Jane", surname="Smith", degree=DegreeName.bachelor, semester=6)
 
         # When
         students_operations.update_student(student.id, updated_student)
 
         # Then
-        assert students_storage.students == [updated_student]
+        assert students_storage.students == [Student(id=1, **updated_student.model_dump())]
