@@ -3,7 +3,7 @@ import pytest
 from typing import Dict, Any, List
 from src.modules.students_operations import StudentsOperations, StudentDataError
 from src.common.models import Student, DegreeName, BaseStudent
-from src.common.storage import StorageHandler
+from src.common.storage.storage import StorageHandler
 
 class MockStudentsStorage(StorageHandler):
     def __init__(self, students: List[Student]):

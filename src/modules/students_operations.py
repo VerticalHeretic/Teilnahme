@@ -1,8 +1,7 @@
 from typing import List
-from src.common.models import Student
-from src.common.storage import StorageHandler
+from src.common.models import BaseStudent, Student
+from src.common.storage.storage import StorageHandler
 from pydantic import ValidationError
-
 
 class StudentDataError(Exception):
     """Raises when student data is invalid"""
@@ -11,7 +10,6 @@ class StudentDataError(Exception):
 class StudentsOperations:
     def __init__(self, storage_handler: StorageHandler): 
         self.storage_handler = storage_handler
-
 
     def get_students(self) -> List[Student]:
         """Get list of all students
@@ -34,6 +32,11 @@ class StudentsOperations:
         return students
 
     def add_student(self, student: Student):
+        # TODO: Will need to check if student already exists
+        # TODO: Will need to check how to make so the ID is automatically generated, regardless of storage type
+        # TODO: Will need to check if the student is valid (i.e. if the degree is valid, if the semester is valid, etc.)
+        # TODO: Will need to make the function async save
+
         """Add student to storage
         
         Args:
