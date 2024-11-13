@@ -124,5 +124,5 @@ dmypy.json
 cython_debug/
 
 # Testing files
-students.csv
+students*.csv
 main.py
