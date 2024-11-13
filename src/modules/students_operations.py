@@ -39,8 +39,8 @@ class StudentsOperations:
         return students
 
     def add_student(self, student: BaseStudent) -> Student:
-        # TODO: Will need to check if the student is valid (i.e. if the degree is valid, if the semester is valid, etc.) 
-        # TODO: Will need to make the function async save 
+        # TODO: Will need to check if the student is valid (i.e. if the degree is valid, if the semester is valid, etc.)
+        # TODO: Will need to make the function async save
 
         """Add student to storage
         
@@ -57,7 +57,7 @@ class StudentsOperations:
         Args:
             id (int): Student id
         """
-        # TODO: Handle non-existing student 
+        # TODO: Handle non-existing student
         self.storage_handler.delete(id)
 
     def update_student(self, id: int, updated_student: BaseStudent) -> Student:
@@ -68,6 +68,6 @@ class StudentsOperations:
             updated_student (Student): Updated student data
         """
         updated_student = Student(id=id, **updated_student.model_dump())
-        # TODO: Handle non-existing student 
+        # TODO: Handle non-existing student
         self.storage_handler.update(id, updated_student.model_dump())
         return updated_student

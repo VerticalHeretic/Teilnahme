@@ -31,7 +31,7 @@ class CSVStorageHandler(StorageHandler):
             existing_data = []
 
         if data.get('id') in [int(row.get('id')) for row in existing_data]:
-            # TODO: Log that is exists already :) 
+            # TODO: Log that is exists already :)
             return
 
         with open(self.file_path, mode="a", newline='') as file:
@@ -67,7 +67,7 @@ class CSVStorageHandler(StorageHandler):
             rows = list(reader)
 
         if len(rows) == 0:
-            # TODO: Log that the file is empty or something :) 
+            # TODO: Log that the file is empty or something :)
             return
 
         with open(self.file_path, mode="w", newline='') as file:
@@ -88,7 +88,7 @@ class CSVStorageHandler(StorageHandler):
             rows = list(reader)
 
         if len(rows) == 0:
-            # TODO: Log that the file is empty or something :) 
+            # TODO: Log that the file is empty or something :)
             return
 
         [row.update(data) for row in rows if int(row.get('id')) == id]
