@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from src.modules.attendence_operations import AttendenceOperations
+from src.modules.attendence_operations import AttendenceOperations, AttendenceDataError
 from src.common.storage.storage import StorageHandler
 from src.common.models import AttendenceRecord, BaseAttendenceRecord
 from typing import List, Dict, Any
@@ -41,6 +41,27 @@ class TestAttendenceOperations:
 
         # Then
         assert got == want
+
+    def test_get_attendence_records_for_classroom_when_no_attendence_records(self):
+        # Given
+        attendence_storage = MockAttendenceStorage([])
+        attendence_operations = AttendenceOperations(attendence_storage)
+        want = []
+
+        # When
+        got = attendence_operations.get_attendence_records_by_classroom(1)
+
+        # Then
+        assert got == want
+
+    def test_get_attendence_records_for_classroom_raises_error_when_invalid_attendence_record_data(self):
+        # Given
+        attendence_storage = MockAttendenceStorage([BaseAttendenceRecord(id=1, classroom_id=1, student_id=1, date=datetime.now())])
+        attendence_operations = AttendenceOperations(attendence_storage)
+
+        # When
+        with pytest.raises(AttendenceDataError):
+            attendence_operations.get_attendence_records_by_classroom(1)
     
     def test_get_attendence_records_for_student_id(self):
         # Given
