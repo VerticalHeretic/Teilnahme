@@ -1,4 +1,4 @@
-name: Tests
+name: Unit Tests with coverage 🧪
 
 on:
   push:
