@@ -24,6 +24,9 @@ class MockStudentsStorage(StorageHandler):
         if index is not None:
             self.students[index] = Student(**data)
 
+    def generate_id(self) -> int:
+        return len(self.students) + 1
+
 class TestStudentsOperations:
 
     def test_get_students(self):
@@ -66,15 +69,16 @@ class TestStudentsOperations:
 
     def test_add_student(self):
         # Given
-        student = Student(id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
+        student = BaseStudent(name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
         students_storage = MockStudentsStorage([])
         students_operations = StudentsOperations(students_storage)
+        want = [Student(id=1, **student.model_dump())]
 
         # When 
         students_operations.add_student(student)
 
         # Then
-        assert students_storage.students == [student]
+        assert students_storage.students == want
 
     def test_delete_student(self):
         # Given

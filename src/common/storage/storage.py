@@ -18,3 +18,7 @@ class StorageHandler(ABC):
     @abstractmethod
     def update(self, id: int, data: Dict[str, Any]):
         pass
+
+    @abstractmethod
+    def generate_id(self) -> int:
+        pass

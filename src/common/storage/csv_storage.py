@@ -97,3 +97,12 @@ class CSVStorageHandler(StorageHandler):
             writer = csv.DictWriter(file, fieldnames=rows[0].keys())
             writer.writeheader()
             writer.writerows(rows)
+
+    def generate_id(self) -> int:
+        """Generate a new ID for a new entry.
+
+        Returns:
+            int: The new ID
+        """
+
+        return len(self.load()) + 1

@@ -31,9 +31,7 @@ class StudentsOperations:
 
         return students
 
-    def add_student(self, student: Student):
-        # TODO: Will need to check if student already exists
-        # TODO: Will need to check how to make so the ID is automatically generated, regardless of storage type
+    def add_student(self, student: BaseStudent):
         # TODO: Will need to check if the student is valid (i.e. if the degree is valid, if the semester is valid, etc.)
         # TODO: Will need to make the function async save
 
@@ -42,7 +40,7 @@ class StudentsOperations:
         Args:
             student (Student): Student to add
         """
-
+        student = Student(id=self.storage_handler.generate_id(), **student.model_dump())
         self.storage_handler.save(student.model_dump())
 
     def delete_student(self, id: int):
