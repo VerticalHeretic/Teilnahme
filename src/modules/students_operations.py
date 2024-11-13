@@ -1,21 +1,8 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Any, List
+from typing import List
 from src.common.models import Student
+from src.common.storage import StorageHandler
 from pydantic import ValidationError
 
-class StorageHandler(ABC):
-    
-    @abstractmethod
-    def save(self, data: Dict[str, Any]):
-        pass
-
-    @abstractmethod
-    def load(self) -> List[Dict[str, Any]]:
-        pass
-
-    @abstractmethod
-    def delete(self, id: int):
-        pass
 
 class StudentDataError(Exception):
     """Raises when student data is invalid"""
@@ -39,11 +26,35 @@ class StudentsOperations:
         students_data = self.storage_handler.load()
         students = []
 
-        for student_data in students_data:
-            try: 
-                student = Student(**student_data)
-                students.append(student)
-            except ValidationError as e:
-                raise StudentDataError(f"Invalid student data format: {str(e)}") from e
+        try:
+            students = [Student(**student_data) for student_data in students_data]
+        except ValidationError as e:
+            raise StudentDataError(f"Invalid student data format: {str(e)}") from e
 
         return students
+
+    def add_student(self, student: Student):
+        """Add student to storage
+        
+        Args:
+            student (Student): Student to add
+        """
+
+        self.storage_handler.save(student.model_dump())
+
+    def delete_student(self, id: int):
+        """Delete student from storage
+        
+        Args:
+            id (int): Student id
+        """
+        self.storage_handler.delete(id)
+
+    def update_student(self, id: int, updated_student: Student):
+        """Update student in storage
+        
+        Args:
+            id (int): Student id
+            updated_student (Student): Updated student data
+        """
+        self.storage_handler.update(id, updated_student.model_dump())

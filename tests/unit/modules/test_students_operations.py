@@ -1,23 +1,29 @@
 import pytest
 
 from typing import Dict, Any, List
-from src.modules.students_operations import StorageHandler, StudentsOperations, StudentDataError
+from src.modules.students_operations import StudentsOperations, StudentDataError
 from src.common.models import Student, DegreeName, BaseStudent
-
+from src.common.storage import StorageHandler
 
 class MockStudentsStorage(StorageHandler):
     def __init__(self, students: List[Student]):
         self.students = students
     
     def save(self, data: Dict[str, Any]):
-        self.students.append(data)
+        self.students.append(Student(**data))
 
     def load(self) -> List[Dict[str, Any]]:
         return [s.model_dump() for s in self.students]
 
     def delete(self, id: int):
         self.students = [s for s in self.students if s.id != id]
+    
+    def update(self, id: int, data: Dict[str, Any]):
+        index = next((index for index, student in enumerate(self.students) if student.id == id), None)
         
+        if index is not None:
+            self.students[index] = Student(**data)
+
 class TestStudentsOperations:
 
     def test_get_students(self):
@@ -58,4 +64,41 @@ class TestStudentsOperations:
             # Then
             assert True
 
+    def test_add_student(self):
+        # Given
+        student = Student(id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
+        students_storage = MockStudentsStorage([])
+        students_operations = StudentsOperations(students_storage)
 
+        # When 
+        students_operations.add_student(student)
+
+        # Then
+        assert students_storage.students == [student]
+
+    def test_delete_student(self):
+        # Given
+        student = Student(id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
+        students_storage = MockStudentsStorage([student])
+        students_operations = StudentsOperations(students_storage)
+
+        # When
+        students_operations.delete_student(student.id)
+
+        # Then
+        assert students_storage.students == []
+
+    def test_update_student(self):
+        # Given
+        student = Student(id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
+        students_storage = MockStudentsStorage([student])
+        students_operations = StudentsOperations(students_storage)
+
+        updated_student = student
+        updated_student.name = "Jane"
+
+        # When
+        students_operations.update_student(student.id, updated_student)
+
+        # Then
+        assert students_storage.students == [updated_student]
