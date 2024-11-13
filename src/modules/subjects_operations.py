@@ -38,8 +38,8 @@ class SubjectsOperations:
         return subjects
 
     def add_subject(self, subject: BaseSubject) -> Subject:
-        # TODO: Validate subject
-        # TODO: Make the function async save
+        # TODO: Validate subject 
+        # TODO: Make the function async save 
 
         """Add a new subject.
         
@@ -60,7 +60,7 @@ class SubjectsOperations:
             id (int): ID of the subject to delete
         """
 
-        # TODO: Handle non-existing subject
+        # TODO: Handle non-existing subject 
         self.storage_handler.delete(id)
 
     def update_subject(self, id: int, updated_subject: BaseSubject) -> Subject:
@@ -74,6 +74,6 @@ class SubjectsOperations:
             Subject: The updated subject
         """
         updated_subject = Subject(id=id, **updated_subject.model_dump())
-        # TODO: Handle non-existing subject
+        # TODO: Handle non-existing subject 
         self.storage_handler.update(id, updated_subject.model_dump())
         return updated_subject
