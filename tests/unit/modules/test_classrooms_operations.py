@@ -1,8 +1,8 @@
-import pytest
 from src.modules.classrooms_operations import ClassroomsOperations
 from src.common.storage.storage import StorageHandler
 from src.common.models import Classroom, BaseClassroom
 from typing import List, Dict, Any
+
 
 class MockClassroomStorage(StorageHandler):
     def __init__(self, classrooms: List[Classroom]):
@@ -18,18 +18,28 @@ class MockClassroomStorage(StorageHandler):
         self.classrooms = [c for c in self.classrooms if c.id != id]
 
     def update(self, id: int, data: Dict[str, Any]):
-        index = next((index for index, classroom in enumerate(self.classrooms) if classroom.id == id), None)
+        index = next(
+            (
+                index
+                for index, classroom in enumerate(self.classrooms)
+                if classroom.id == id
+            ),
+            None,
+        )
         if index is not None:
             self.classrooms[index] = Classroom(**data)
-    
+
     def generate_id(self) -> int:
         return len(self.classrooms) + 1
 
-class TestClassroomsOperations:
 
+class TestClassroomsOperations:
     def test_get_classrooms(self):
         # Given
-        classrooms = [Classroom(id=1, students_ids=[1, 2], subject_id=1), Classroom(id=2, students_ids=[3,4], subject_id=1)]
+        classrooms = [
+            Classroom(id=1, students_ids=[1, 2], subject_id=1),
+            Classroom(id=2, students_ids=[3, 4], subject_id=1),
+        ]
         classroom_storage = MockClassroomStorage(classrooms)
         classrooms_operations = ClassroomsOperations(classroom_storage)
         want = classrooms
@@ -64,7 +74,7 @@ class TestClassroomsOperations:
 
         # Then
         assert got == want
-    
+
     def test_delete_classroom(self):
         # Given
         classroom = Classroom(id=1, students_ids=[1, 2], subject_id=1)

@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Type
 from sqlmodel import SQLModel
 
+
 class StorageHandler(ABC):
-    
     @abstractmethod
     def save(self, data: Dict[str, Any]):
         pass
@@ -28,7 +28,6 @@ class StorageHandler(ABC):
 # NewStorageHandler is a a new more generic storage handler interface, to make use of databases
 # and other types of storage backends.
 class NewStorageHandler(ABC):
-
     @abstractmethod
     def get_all(self, model_type: Type[SQLModel]) -> List[SQLModel]:
         pass

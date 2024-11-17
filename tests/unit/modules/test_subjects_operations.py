@@ -5,6 +5,7 @@ from src.modules.subjects_operations import SubjectsOperations, SubjectDataError
 from src.common.models import Subject, BaseSubject, DegreeName
 from src.common.storage.storage import StorageHandler
 
+
 class MockSubjectsStorage(StorageHandler):
     def __init__(self, subjects: List[Subject]):
         self.subjects = subjects
@@ -19,17 +20,19 @@ class MockSubjectsStorage(StorageHandler):
         self.subjects = [s for s in self.subjects if s.id != id]
 
     def update(self, id: int, data: Dict[str, Any]):
-        index = next((index for index, subject in enumerate(self.subjects) if subject.id == id), None)
-        
+        index = next(
+            (index for index, subject in enumerate(self.subjects) if subject.id == id),
+            None,
+        )
+
         if index is not None:
             self.subjects[index] = Subject(**data)
 
     def generate_id(self) -> int:
         return len(self.subjects) + 1
-    
+
 
 class TestSubjectsOperations:
-
     def test_get_subjects(self):
         # Given
         subject = Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor)
@@ -65,7 +68,6 @@ class TestSubjectsOperations:
         with pytest.raises(SubjectDataError):
             subjects_operations.get_subjects()
 
-
     def test_add_subject(self):
         # Given
         subject = BaseSubject(name="Math", semester=4, degree=DegreeName.bachelor)
@@ -75,7 +77,7 @@ class TestSubjectsOperations:
 
         # When
         got = subjects_operations.add_subject(subject)
-        
+
         # Then
         assert got == want
         assert subjects_storage.subjects == [want]
@@ -111,7 +113,9 @@ class TestSubjectsOperations:
         want = Subject(id=1, name="Physics", semester=4, degree=DegreeName.bachelor)
 
         # When
-        subjects_operations.update_subject(1, BaseSubject(name="Physics", semester=4, degree=DegreeName.bachelor))
+        subjects_operations.update_subject(
+            1, BaseSubject(name="Physics", semester=4, degree=DegreeName.bachelor)
+        )
 
         # Then
         assert subjects_storage.subjects == [want]
@@ -122,7 +126,9 @@ class TestSubjectsOperations:
         subjects_operations = SubjectsOperations(subjects_storage)
 
         # When
-        subjects_operations.update_subject(1, BaseSubject(name="Physics", semester=4, degree=DegreeName.bachelor))
-        
+        subjects_operations.update_subject(
+            1, BaseSubject(name="Physics", semester=4, degree=DegreeName.bachelor)
+        )
+
         # Then
         assert subjects_storage.subjects == []
