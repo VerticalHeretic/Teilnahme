@@ -1,7 +1,9 @@
-from src.common.storage.storage import StorageHandler
-from src.common.models import Subject, BaseSubject
 from typing import List
+
 from pydantic import ValidationError
+
+from src.common.models import BaseSubject, Subject
+from src.common.storage.storage import StorageHandler
 
 
 class SubjectDataError(Exception):

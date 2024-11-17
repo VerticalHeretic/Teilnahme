@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Type
+from typing import Any, Dict, List, Type
+
 from sqlmodel import SQLModel
 
 

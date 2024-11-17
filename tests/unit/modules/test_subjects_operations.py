@@ -1,9 +1,10 @@
+from typing import Any, Dict, List
+
 import pytest
 
-from typing import Dict, Any, List
-from src.modules.subjects_operations import SubjectsOperations, SubjectDataError
-from src.common.models import Subject, BaseSubject, DegreeName
+from src.common.models import BaseSubject, DegreeName, Subject
 from src.common.storage.storage import StorageHandler
+from src.modules.subjects_operations import SubjectDataError, SubjectsOperations
 
 
 class MockSubjectsStorage(StorageHandler):

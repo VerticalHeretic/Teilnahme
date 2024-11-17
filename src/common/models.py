@@ -1,7 +1,8 @@
 from datetime import datetime
-from pydantic import BaseModel
 from enum import Enum
-from sqlmodel import SQLModel, Field
+
+from pydantic import BaseModel
+from sqlmodel import Field, SQLModel
 
 
 class DegreeName(str, Enum):

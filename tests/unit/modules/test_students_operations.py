@@ -1,8 +1,10 @@
 from typing import List, Type
-from src.modules.students_operations import StudentsOperations
-from src.common.models import Student, DegreeName
-from src.common.storage.storage import NewStorageHandler
+
 from sqlmodel import SQLModel
+
+from src.common.models import DegreeName, Student
+from src.common.storage.storage import NewStorageHandler
+from src.modules.students_operations import StudentsOperations
 
 
 class MockStudentsStorage(NewStorageHandler):

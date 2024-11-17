@@ -1,8 +1,8 @@
 import pytest
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import Session, SQLModel, create_engine
 
+from src.common.models import DegreeName, Student
 from src.common.storage.db_storage import DBStorageHandler
-from src.common.models import Student, DegreeName
 
 
 @pytest.fixture

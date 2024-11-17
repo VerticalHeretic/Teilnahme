@@ -1,6 +1,8 @@
-from sqlmodel import SQLModel, create_engine, Session, select
 from typing import Annotated, List, Type
+
 from fastapi import Depends
+from sqlmodel import Session, SQLModel, create_engine, select
+
 from src.common.storage.storage import NewStorageHandler
 
 # SQLite database configuration
