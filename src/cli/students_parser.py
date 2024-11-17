@@ -1,5 +1,5 @@
-from src.modules.students_operations import StudentsOperations
 from src.common.models import BaseStudent, DegreeName
+from src.modules.students_operations import StudentsOperations
 
 
 class StudentsParser:

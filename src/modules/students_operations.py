@@ -1,10 +1,11 @@
 from typing import Annotated, List
 
 from fastapi import Depends
-from src.common.models import Student, DegreeName
+
+from src.common.errors import NotFoundError
+from src.common.models import DegreeName, Student
 from src.common.storage.db_storage import DBStorageHandlerDep
 from src.common.storage.storage import NewStorageHandler
-from src.common.errors import NotFoundError
 
 
 class StudentBachelorSemesterError(Exception):

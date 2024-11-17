@@ -129,6 +129,3 @@ main.py
 
 # Database
 *.db
-
-# VSCode
-.vscode/

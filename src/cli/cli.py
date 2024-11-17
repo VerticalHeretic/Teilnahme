@@ -1,8 +1,8 @@
 import argparse
 
+from src.cli.students_parser import StudentsParser
 from src.common.storage.csv_storage import CSVStorageHandler, StorageHandler
 from src.modules.students_operations import StudentsOperations
-from src.cli.students_parser import StudentsParser
 
 
 def setup_parser(storage_handler: StorageHandler):

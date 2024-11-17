@@ -1,9 +1,11 @@
-import pytest
 from datetime import datetime
-from src.modules.attendence_operations import AttendenceOperations, AttendenceDataError
-from src.common.storage.storage import StorageHandler
+from typing import Any, Dict, List
+
+import pytest
+
 from src.common.models import AttendenceRecord, BaseAttendenceRecord
-from typing import List, Dict, Any
+from src.common.storage.storage import StorageHandler
+from src.modules.attendence_operations import AttendenceDataError, AttendenceOperations
 
 
 class MockAttendenceStorage(StorageHandler):

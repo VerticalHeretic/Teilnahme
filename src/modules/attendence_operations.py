@@ -1,8 +1,10 @@
-from src.common.storage.storage import StorageHandler
-from src.common.models import AttendenceRecord, BaseAttendenceRecord
-from typing import List
-from pydantic import ValidationError
 from datetime import datetime
+from typing import List
+
+from pydantic import ValidationError
+
+from src.common.models import AttendenceRecord, BaseAttendenceRecord
+from src.common.storage.storage import StorageHandler
 
 
 class AttendenceDataError(Exception):
