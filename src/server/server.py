@@ -19,7 +19,7 @@ async def root():
 
 @app.get("/students/")
 async def get_students(session: SessionDep) -> list[Student]:
-    return session.exec(select(Student)).all()
+    return list(session.exec(select(Student)).all())
 
 @app.get("/students/{degree_name}")
 async def get_students_in_degree(session: SessionDep, degree_name: DegreeName, semester: int | None = None) -> list[Student]:
@@ -28,9 +28,9 @@ async def get_students_in_degree(session: SessionDep, degree_name: DegreeName, s
     elif degree_name is DegreeName.master and isinstance(semester,int) and semester > 4:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Master degree has only 4 semesters")
     
-    return session.exec(select(Student)
+    return list(session.exec(select(Student)
                             .where(Student.degree == degree_name)
-                            .where(Student.semester == semester if semester is not None else True)).all()
+                            .where(Student.semester == semester if semester is not None else True)).all())
 
 @app.post("/students/")
 async def add_student(session: SessionDep, student: Student) -> Student:
