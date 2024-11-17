@@ -16,6 +16,17 @@ class MockStudentsStorage(NewStorageHandler):
     def get_by_id(self, id: int, model_type: Type[SQLModel]) -> SQLModel:
         return next((s for s in self.students if isinstance(s, model_type) and s.id == id), None)
     
+    def get_all_where(self, model_type: Type[SQLModel], conditions) -> List[SQLModel]:
+        return [
+            student for student in self.students 
+            if isinstance(student, model_type) and 
+               # For each condition in conditions list:
+               # - getattr(student, condition[0]) gets the value of the attribute named in condition[0] 
+               # - condition[1] is the value we want that attribute to equal
+               # - Returns True only if ALL conditions match for this student
+               all(getattr(student, condition[0]) == condition[1] for condition in conditions)
+        ]
+    
     def create(self, model: SQLModel):
         student = Student(id=len(self.students) + 1, **model.model_dump(exclude_unset=True))
         self.students.append(student)
