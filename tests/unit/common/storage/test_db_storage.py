@@ -1,4 +1,3 @@
-from multiprocessing import Value
 import pytest
 from sqlmodel import SQLModel, create_engine, Session
 

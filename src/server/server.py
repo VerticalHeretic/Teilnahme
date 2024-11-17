@@ -1,8 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
-from enum import Enum
 from fastapi.exceptions import HTTPException
-from sqlmodel import select
 from src.common.models import Student, DegreeName
 from src.common.storage.db_storage import create_db_and_tables
 from src.modules.students_operations import StudentsOperationsDep, StudentBachelorSemesterError, StudentMasterSemesterError
