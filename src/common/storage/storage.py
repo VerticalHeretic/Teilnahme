@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, TypeVar
-from pydantic import BaseModel
+from typing import Dict, Any, List, Type
 from sqlmodel import SQLModel
 
 class StorageHandler(ABC):
@@ -31,11 +30,11 @@ class StorageHandler(ABC):
 class NewStorageHandler(ABC):
 
     @abstractmethod
-    def get_all(self) -> List[SQLModel]:
+    def get_all(self, model_type: Type[SQLModel]) -> List[SQLModel]:
         pass
 
     @abstractmethod
-    def get_by_id(self, id: int) -> SQLModel:
+    def get_by_id(self, id: int, model_type: Type[SQLModel]) -> SQLModel:
         pass
 
     @abstractmethod
@@ -47,5 +46,5 @@ class NewStorageHandler(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: int) -> None:
+    def delete(self, id: int, model_type: Type[SQLModel]) -> None:
         pass

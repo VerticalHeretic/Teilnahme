@@ -32,6 +32,7 @@ class DBStorageHandler(NewStorageHandler):
     def create(self, model: SQLModel) -> SQLModel:
         self.session.add(model)
         self.session.commit()
+        self.session.refresh(model)
         return model
 
     def update(self, id: int, model: SQLModel) -> SQLModel:
@@ -55,3 +56,8 @@ class DBStorageHandler(NewStorageHandler):
         
         self.session.delete(db_model)
         self.session.commit()
+
+def get_db_storage_handler(session: SessionDep) -> DBStorageHandler:
+    return DBStorageHandler(session)
+    
+DBStorageHandlerDep = Annotated[DBStorageHandler, Depends(get_db_storage_handler)]
