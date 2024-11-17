@@ -34,6 +34,10 @@ class NewStorageHandler(ABC):
         pass
 
     @abstractmethod
+    def get_all_where(self, model_type: Type[SQLModel], conditions) -> List[SQLModel]:
+        pass
+
+    @abstractmethod
     def get_by_id(self, id: int, model_type: Type[SQLModel]) -> SQLModel:
         pass
 

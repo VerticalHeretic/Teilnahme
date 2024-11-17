@@ -46,8 +46,9 @@ class TestDBStorageHandler:
     
     def test_get_by_id_not_found(self, test_db):
         storage_handler = DBStorageHandler(session=test_db)
-        assert storage_handler.get_by_id(1, Student) is None
 
+        with pytest.raises(ValueError):
+            storage_handler.get_by_id(1, Student)
 
     def test_create(self, test_db):
         # Given
@@ -71,7 +72,8 @@ class TestDBStorageHandler:
         storage_handler.delete(1, Student)
 
         # Then
-        assert storage_handler.get_by_id(1, Student) is None
+        with pytest.raises(ValueError):
+            storage_handler.get_by_id(1, Student)
         
     def test_delete_not_existing(self, test_db):
         # Given
