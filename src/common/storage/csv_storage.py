@@ -2,6 +2,7 @@ import csv
 from typing import Dict, Any, List
 from src.common.storage.storage import StorageHandler
 
+
 class CSVStorageHandler(StorageHandler):
     """A storage handler implementation that uses CSV files to store data.
 
@@ -30,12 +31,12 @@ class CSVStorageHandler(StorageHandler):
         except FileNotFoundError:
             existing_data = []
 
-        if data.get('id') in [int(row.get('id')) for row in existing_data]:
+        if data.get("id") in [int(row.get("id")) for row in existing_data]:
             # TODO: Log that is exists already :)
             return
 
-        with open(self.file_path, mode="a", newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=data.keys())         
+        with open(self.file_path, mode="a", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=data.keys())
 
             # Check if file is empty by checking if cursor is at start (position 0)
             # If empty, write the CSV header row with the field names
@@ -43,7 +44,7 @@ class CSVStorageHandler(StorageHandler):
                 writer.writeheader()
 
             writer.writerow(data)
-    
+
     def load(self) -> List[Dict[str, Any]]:
         """Load all data from the CSV file.
 
@@ -70,11 +71,11 @@ class CSVStorageHandler(StorageHandler):
             # TODO: Log that the file is empty or something :)
             return
 
-        with open(self.file_path, mode="w", newline='') as file:
+        with open(self.file_path, mode="w", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=rows[0].keys())
             writer.writeheader()
 
-            [writer.writerow(row) for row in rows if int(row.get('id')) != id]
+            [writer.writerow(row) for row in rows if int(row.get("id")) != id]
 
     def update(self, id: int, data: Dict[str, Any]):
         """Update an existing entry in the CSV file.
@@ -91,9 +92,9 @@ class CSVStorageHandler(StorageHandler):
             # TODO: Log that the file is empty or something :)
             return
 
-        [row.update(data) for row in rows if int(row.get('id')) == id]
-        
-        with open(self.file_path, mode="w", newline='') as file:
+        [row.update(data) for row in rows if int(row.get("id")) == id]
+
+        with open(self.file_path, mode="w", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=rows[0].keys())
             writer.writeheader()
             writer.writerows(rows)
@@ -107,4 +108,4 @@ class CSVStorageHandler(StorageHandler):
         if len(self.load()) == 0:
             return 1
 
-        return int(self.load()[-1]['id']) + 1
+        return int(self.load()[-1]["id"]) + 1

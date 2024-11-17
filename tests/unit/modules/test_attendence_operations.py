@@ -5,9 +5,11 @@ from src.common.storage.storage import StorageHandler
 from src.common.models import AttendenceRecord, BaseAttendenceRecord
 from typing import List, Dict, Any
 
+
 class MockAttendenceStorage(StorageHandler):
     def __init__(self, attendence_records: List[AttendenceRecord]):
         self.attendence_records = attendence_records
+
     def save(self, data: Dict[str, Any]):
         self.attendence_records.append(AttendenceRecord(**data))
 
@@ -18,21 +20,34 @@ class MockAttendenceStorage(StorageHandler):
         self.attendence_records = [r for r in self.attendence_records if r.id != id]
 
     def update(self, id: int, data: Dict[str, Any]):
-        index = next((index for index, record in enumerate(self.attendence_records) if record.id == id), None)
-        
+        index = next(
+            (
+                index
+                for index, record in enumerate(self.attendence_records)
+                if record.id == id
+            ),
+            None,
+        )
+
         if index is not None:
             self.attendence_records[index] = AttendenceRecord(**data)
 
     def generate_id(self) -> int:
         return len(self.attendence_records) + 1
-    
-class TestAttendenceOperations:
 
+
+class TestAttendenceOperations:
     def test_get_attendence_records_for_classroom(self):
         # Given
-        attendence_record = AttendenceRecord(id=1, classroom_id=1, student_id=1, date=datetime.now())
-        attendence_record2 = AttendenceRecord(id=2, classroom_id=2, student_id=1, date=datetime.now())
-        attendence_storage = MockAttendenceStorage([attendence_record, attendence_record2])
+        attendence_record = AttendenceRecord(
+            id=1, classroom_id=1, student_id=1, date=datetime.now()
+        )
+        attendence_record2 = AttendenceRecord(
+            id=2, classroom_id=2, student_id=1, date=datetime.now()
+        )
+        attendence_storage = MockAttendenceStorage(
+            [attendence_record, attendence_record2]
+        )
         attendence_operations = AttendenceOperations(attendence_storage)
         want = [attendence_record]
 
@@ -54,20 +69,34 @@ class TestAttendenceOperations:
         # Then
         assert got == want
 
-    def test_get_attendence_records_for_classroom_raises_error_when_invalid_attendence_record_data(self):
+    def test_get_attendence_records_for_classroom_raises_error_when_invalid_attendence_record_data(
+        self,
+    ):
         # Given
-        attendence_storage = MockAttendenceStorage([BaseAttendenceRecord(id=1, classroom_id=1, student_id=1, date=datetime.now())])
+        attendence_storage = MockAttendenceStorage(
+            [
+                BaseAttendenceRecord(
+                    id=1, classroom_id=1, student_id=1, date=datetime.now()
+                )
+            ]
+        )
         attendence_operations = AttendenceOperations(attendence_storage)
 
         # When
         with pytest.raises(AttendenceDataError):
             attendence_operations.get_attendence_records_by_classroom(1)
-    
+
     def test_get_attendence_records_for_student_id(self):
         # Given
-        attendence_record = AttendenceRecord(id=1, classroom_id=1, student_id=1, date=datetime.now())
-        attendence_record2 = AttendenceRecord(id=2, classroom_id=2, student_id=1, date=datetime.now())
-        attendence_storage = MockAttendenceStorage([attendence_record, attendence_record2])
+        attendence_record = AttendenceRecord(
+            id=1, classroom_id=1, student_id=1, date=datetime.now()
+        )
+        attendence_record2 = AttendenceRecord(
+            id=2, classroom_id=2, student_id=1, date=datetime.now()
+        )
+        attendence_storage = MockAttendenceStorage(
+            [attendence_record, attendence_record2]
+        )
         attendence_operations = AttendenceOperations(attendence_storage)
         want = [attendence_record, attendence_record2]
 
@@ -75,15 +104,21 @@ class TestAttendenceOperations:
         got = attendence_operations.get_attendence_records_by_student(1)
 
         # Then
-        assert got == want 
+        assert got == want
 
     def test_get_attendence_records_for_date(self):
         # Given
         date1 = datetime(2024, 1, 1, 10, 0)
         date2 = datetime(2024, 1, 2, 10, 0)
-        attendence_record = AttendenceRecord(id=1, classroom_id=1, student_id=1, date=date1)
-        attendence_record2 = AttendenceRecord(id=2, classroom_id=2, student_id=1, date=date2)
-        attendence_storage = MockAttendenceStorage([attendence_record, attendence_record2])
+        attendence_record = AttendenceRecord(
+            id=1, classroom_id=1, student_id=1, date=date1
+        )
+        attendence_record2 = AttendenceRecord(
+            id=2, classroom_id=2, student_id=1, date=date2
+        )
+        attendence_storage = MockAttendenceStorage(
+            [attendence_record, attendence_record2]
+        )
         attendence_operations = AttendenceOperations(attendence_storage)
         want = [attendence_record]
 
@@ -95,7 +130,9 @@ class TestAttendenceOperations:
 
     def test_add_attendence_record(self):
         # Given
-        attendence_record = BaseAttendenceRecord(classroom_id=1, student_id=1, date=datetime.now())
+        attendence_record = BaseAttendenceRecord(
+            classroom_id=1, student_id=1, date=datetime.now()
+        )
         attendence_storage = MockAttendenceStorage([])
         attendence_operations = AttendenceOperations(attendence_storage)
         want = AttendenceRecord(id=1, **attendence_record.model_dump())
@@ -105,10 +142,12 @@ class TestAttendenceOperations:
 
         # Then
         assert got == want
-    
+
     def test_add_attendence_record_id_is_generated(self):
         # Given
-        attendence_record = BaseAttendenceRecord(classroom_id=1, student_id=1, date=datetime.now())
+        attendence_record = BaseAttendenceRecord(
+            classroom_id=1, student_id=1, date=datetime.now()
+        )
         attendence_storage = MockAttendenceStorage([attendence_record])
         attendence_operations = AttendenceOperations(attendence_storage)
         want = AttendenceRecord(id=2, **attendence_record.model_dump())
@@ -121,7 +160,9 @@ class TestAttendenceOperations:
 
     def test_delete_attendence_record(self):
         # Given
-        attendence_record = AttendenceRecord(id=1, classroom_id=1, student_id=1, date=datetime.now())
+        attendence_record = AttendenceRecord(
+            id=1, classroom_id=1, student_id=1, date=datetime.now()
+        )
         attendence_storage = MockAttendenceStorage([attendence_record])
         attendence_operations = AttendenceOperations(attendence_storage)
         want = []
