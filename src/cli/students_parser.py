@@ -24,7 +24,7 @@ class StudentsParser:
         self.students_operations.delete_student(args.id)
         print(f"Deleted student with id: {args.id}")
 
-    def handle_students_updatese(self, args):
+    def handle_students_update(self, args):
         # Create update dict with only provided fields
         update_data = {}
         if args.name is not None:
@@ -72,4 +72,4 @@ class StudentsParser:
         students_update_parser.add_argument("--surname", type=str, help="Student surname")
         students_update_parser.add_argument("--degree", type=DegreeName, help="Student degree")
         students_update_parser.add_argument("--semester", type=int, help="Student semester")
-        students_update_parser.set_defaults(func=lambda args: self.handle_students_updatese(args))
+        students_update_parser.set_defaults(func=lambda args: self.handle_students_update(args))

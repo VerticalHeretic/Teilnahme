@@ -104,5 +104,7 @@ class CSVStorageHandler(StorageHandler):
         Returns:
             int: The new ID
         """
+        if len(self.load()) == 0:
+            return 1
 
-        return len(self.load()) + 1
+        return int(self.load()[-1]['id']) + 1

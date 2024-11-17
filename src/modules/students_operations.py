@@ -31,10 +31,7 @@ class StudentsOperations:
             StudentDataError: When student data is invalid
         """
 
-        try:
-            students = [Student(**student_data) for student_data in self.storage_handler.load()]
-        except ValidationError as e:
-            raise StudentDataError(f"Invalid student data format: {str(e)}") from e
+        students = [Student(**student_data) for student_data in self.storage_handler.load()]
 
         return students
 

@@ -1,4 +1,5 @@
 import pytest
+from src.common.storage import csv_storage
 from src.common.storage.csv_storage import CSVStorageHandler
 
 @pytest.fixture
@@ -13,6 +14,13 @@ class TestCSVStorageHandler:
     def test_save(self, csv_storage_handler):
         csv_storage_handler.save({'id': 1, 'name': 'John', 'surname': 'Daw', 'degree': 'Bachelor', 'semester': 4})
         assert csv_storage_handler.load() == [{'id': '1', 'name': 'John', 'surname': 'Daw', 'degree': 'Bachelor', 'semester': '4'}]
+    
+    def test_save_100_students(self, csv_storage_handler):
+        for i in range(1, 101):
+            csv_storage_handler.save({'id': i, 'name': f'John{i}', 'surname': f'Daw{i}', 'degree': 'Bachelor', 'semester': 4})
+        assert csv_storage_handler.load()[-1]['id'] == '100'
+        assert csv_storage_handler.load()[0]['id'] == '1'
+        assert len(csv_storage_handler.load()) == 100
     
     def test_save_existing_id(self, csv_storage_handler):
         csv_storage_handler.save({'id': 1, 'name': 'John', 'surname': 'Daw', 'degree': 'Bachelor', 'semester': 4})
