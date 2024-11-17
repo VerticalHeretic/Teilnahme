@@ -1,4 +1,4 @@
-name: Unit Tests with coverage 🧪
+name: Unit tests, TODOs to issues and linting 🧪
 
 on:
   push:
@@ -13,11 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install -r requirements.txt
-      - run: pytest -vv --cov=src 
+      - name: "Install dependencies"
+        run: pip install -r requirements.txt
+      - name: "Run tests with coverage"
+        run: pytest -vv --cov=src 
+  
+  lint:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: Super-Linter
+        uses: super-linter/super-linter/slim@v7.1.0
+
   todos-to-issue:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
-      - name: "TODO to Issue"
+      - name: "Convert TODOs to Issues"
         uses: "alstr/todo-to-issue-action@v5"
