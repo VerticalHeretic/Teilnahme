@@ -7,14 +7,12 @@ class DegreeName(str, Enum):
     master = "Master"
     bachelor = "Bachelor"
 
-class BaseStudent(SQLModel):
+class Student(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
     name: str
     surname: str
     degree: DegreeName
     semester: int
-
-class Student(BaseStudent, table=True):
-    id: int = Field(default=None, primary_key=True)
 
 class BaseSubject(BaseModel):
     name: str

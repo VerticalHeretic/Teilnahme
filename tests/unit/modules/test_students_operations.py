@@ -2,7 +2,7 @@ import pytest
 
 from typing import Dict, Any, List
 from src.modules.students_operations import StudentsOperations, StudentDataError
-from src.common.models import Student, DegreeName, BaseStudent
+from src.common.models import Student, DegreeName
 from src.common.storage.storage import StorageHandler
 
 class MockStudentsStorage(StorageHandler):
@@ -56,7 +56,7 @@ class TestStudentsOperations:
 
     def test_add_student(self):
         # Given
-        student = BaseStudent(name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
+        student = Student(name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
         students_storage = MockStudentsStorage([])
         students_operations = StudentsOperations(students_storage)
         want = [Student(id=1, **student.model_dump())]
@@ -85,10 +85,10 @@ class TestStudentsOperations:
         students_storage = MockStudentsStorage([student])
         students_operations = StudentsOperations(students_storage)
 
-        updated_student = BaseStudent(name="Jane", surname="Smith", degree=DegreeName.bachelor, semester=6)
+        updated_student = Student(id=1, name="Jane", surname="Smith", degree=DegreeName.bachelor, semester=6)
 
         # When
         students_operations.update_student(student.id, updated_student)
 
         # Then
-        assert students_storage.students == [Student(id=1, **updated_student.model_dump())]
+        assert students_storage.students == [updated_student]
