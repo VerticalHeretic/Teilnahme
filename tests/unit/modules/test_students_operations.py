@@ -1,31 +1,33 @@
 import pytest
 
-from typing import Dict, Any, List
-from src.modules.students_operations import StudentsOperations, StudentDataError
+from typing import Dict, Any, List, Type
+from src.modules.students_operations import StudentsOperations
 from src.common.models import Student, DegreeName
-from src.common.storage.storage import StorageHandler
-
-class MockStudentsStorage(StorageHandler):
+from src.common.storage.storage import NewStorageHandler
+from sqlmodel import SQLModel
+    
+class MockStudentsStorage(NewStorageHandler):
     def __init__(self, students: List[Student]):
         self.students = students
     
-    def save(self, data: Dict[str, Any]):
-        self.students.append(Student(**data))
+    def get_all(self, model_type: Type[SQLModel]) -> List[SQLModel]:
+        return [s for s in self.students if isinstance(s, model_type)]
 
-    def load(self) -> List[Dict[str, Any]]:
-        return [s.model_dump() for s in self.students]
-
-    def delete(self, id: int):
-        self.students = [s for s in self.students if s.id != id]
+    def get_by_id(self, id: int, model_type: Type[SQLModel]) -> SQLModel:
+        return next((s for s in self.students if isinstance(s, model_type) and s.id == id), None)
     
-    def update(self, id: int, data: Dict[str, Any]):
+    def create(self, model: SQLModel):
+        student = Student(id=len(self.students) + 1, **model.model_dump(exclude_unset=True))
+        self.students.append(student)
+
+    def update(self, id: int, model: SQLModel):
         index = next((index for index, student in enumerate(self.students) if student.id == id), None)
         
         if index is not None:
-            self.students[index] = Student(**data)
+            self.students[index] = model
 
-    def generate_id(self) -> int:
-        return len(self.students) + 1
+    def delete(self, id: int, model_type: Type[SQLModel]):
+        self.students = [s for s in self.students if isinstance(s, model_type) and s.id != id]
 
 class TestStudentsOperations:
 
@@ -59,7 +61,7 @@ class TestStudentsOperations:
         student = Student(name="John", surname="Daw", degree=DegreeName.bachelor, semester=4)
         students_storage = MockStudentsStorage([])
         students_operations = StudentsOperations(students_storage)
-        want = [Student(id=1, **student.model_dump())]
+        want = [Student(id=1, **student.model_dump(exclude_unset=True))]
 
         # When 
         students_operations.add_student(student)
