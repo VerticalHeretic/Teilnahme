@@ -58,13 +58,13 @@ class StudentsOperations:
             and isinstance(semester, int)
             and semester > 6
         ):
-            raise StudentBachelorSemesterError(f"Bachelor degree has only 6 semesters")
+            raise StudentBachelorSemesterError("Bachelor degree has only 6 semesters")
         elif (
             degree_name is DegreeName.master
             and isinstance(semester, int)
             and semester > 4
         ):
-            raise StudentMasterSemesterError(f"Master degree has only 4 semesters")
+            raise StudentMasterSemesterError("Master degree has only 4 semesters")
 
         conditions = [Student.degree == degree_name]
         if semester is not None:
