@@ -126,3 +126,9 @@ cython_debug/
 # Testing files
 students*.csv
 main.py
+
+# Database
+*.db
+
+# VSCode
+.vscode/
