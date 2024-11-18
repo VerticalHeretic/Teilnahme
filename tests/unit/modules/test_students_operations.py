@@ -1,68 +1,35 @@
-from typing import List, Type
+import pytest
+from sqlmodel import Session, SQLModel, create_engine
 
-from sqlmodel import SQLModel
-
+from src.common.errors import NotFoundError
 from src.common.models import DegreeName, Student
-from src.common.storage.storage import NewStorageHandler
-from src.modules.students_operations import StudentsOperations
+from src.common.storage.db_storage import DBStorageHandler
+from src.modules.students_operations import (
+    SemesterError,
+    StudentsOperations,
+    StudentValidationError,
+)
 
 
-class MockStudentsStorage(NewStorageHandler):
-    def __init__(self, students: List[Student]):
-        self.students = students
-
-    def get_all(self, model_type: Type[SQLModel]) -> List[SQLModel]:
-        return [s for s in self.students if isinstance(s, model_type)]
-
-    def get_by_id(self, id: int, model_type: Type[SQLModel]) -> SQLModel:
-        return next(
-            (s for s in self.students if isinstance(s, model_type) and s.id == id), None
-        )
-
-    def get_all_where(self, model_type: Type[SQLModel], conditions) -> List[SQLModel]:
-        return [
-            student
-            for student in self.students
-            if isinstance(student, model_type)
-            and
-            # For each condition in conditions list:
-            # - getattr(student, condition[0]) gets the value of the attribute named in condition[0]
-            # - condition[1] is the value we want that attribute to equal
-            # - Returns True only if ALL conditions match for this student
-            all(
-                getattr(student, condition[0]) == condition[1]
-                for condition in conditions
-            )
-        ]
-
-    def create(self, model: SQLModel):
-        student = Student(
-            id=len(self.students) + 1, **model.model_dump(exclude_unset=True)
-        )
-        self.students.append(student)
-
-    def update(self, id: int, model: SQLModel):
-        index = next(
-            (index for index, student in enumerate(self.students) if student.id == id),
-            None,
-        )
-
-        if index is not None:
-            self.students[index] = model
-
-    def delete(self, id: int, model_type: Type[SQLModel]):
-        self.students = [
-            s for s in self.students if isinstance(s, model_type) and s.id != id
-        ]
+@pytest.fixture
+def test_db():
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        yield session
 
 
 class TestStudentsOperations:
-    def test_get_students(self):
+    def test_get_students(self, test_db):
         # Given
+
         student = Student(
             id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
         )
-        students_storage = MockStudentsStorage([student])
+
+        test_db.add(student)
+        test_db.commit()
+        students_storage = DBStorageHandler(session=test_db)
         students_operations = StudentsOperations(students_storage)
         want = [student]
 
@@ -72,9 +39,9 @@ class TestStudentsOperations:
         # Then
         assert got == want
 
-    def test_get_empty_list_when_no_students(self):
+    def test_get_empty_list_when_no_students(self, test_db):
         # Given
-        students_storage = MockStudentsStorage([])
+        students_storage = DBStorageHandler(session=test_db)
         students_operations = StudentsOperations(students_storage)
         want = []
 
@@ -84,41 +51,177 @@ class TestStudentsOperations:
         # Then
         assert got == want
 
-    def test_add_student(self):
+    def test_get_students_in_degree(self, test_db):
+        # Given
+        students = [
+            Student(
+                id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
+            ),
+            Student(
+                id=2,
+                name="Jane",
+                surname="Smith",
+                degree=DegreeName.bachelor,
+                semester=6,
+            ),
+            Student(
+                id=3,
+                name="Alice",
+                surname="Johnson",
+                degree=DegreeName.master,
+                semester=2,
+            ),
+        ]
+        for student in students:
+            test_db.add(student)
+        test_db.commit()
+
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+        want = students[:2]
+
+        # When
+        got = students_operations.get_students_in_degree(DegreeName.bachelor)
+
+        # Then
+        assert got == want
+
+    def test_get_students_in_degree_with_semester(self, test_db):
+        # Given
+        students = [
+            Student(
+                id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
+            ),
+            Student(
+                id=2,
+                name="Jane",
+                surname="Smith",
+                degree=DegreeName.bachelor,
+                semester=6,
+            ),
+            Student(
+                id=3,
+                name="Alice",
+                surname="Johnson",
+                degree=DegreeName.master,
+                semester=2,
+            ),
+        ]
+        for student in students:
+            test_db.add(student)
+        test_db.commit()
+
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+        want = [students[0]]
+
+        # When
+        got = students_operations.get_students_in_degree(DegreeName.bachelor, 4)
+
+        # Then
+        assert got == want
+
+    def test_get_students_in_degree_with_invalid_semester(self, test_db):
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+
+        # When
+        with pytest.raises(SemesterError):
+            students_operations.get_students_in_degree(DegreeName.bachelor, 10)
+
+        with pytest.raises(SemesterError):
+            students_operations.get_students_in_degree(DegreeName.master, 10)
+
+        with pytest.raises(SemesterError):
+            students_operations.get_students_in_degree(DegreeName.bachelor, 0)
+
+    def test_add_student(self, test_db):
         # Given
         student = Student(
             name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
         )
-        students_storage = MockStudentsStorage([])
+        test_db.add(student)
+        test_db.commit()
+
+        students_storage = DBStorageHandler(session=test_db)
         students_operations = StudentsOperations(students_storage)
-        want = [Student(id=1, **student.model_dump(exclude_unset=True))]
 
         # When
         students_operations.add_student(student)
 
         # Then
-        assert students_storage.students == want
+        assert student == test_db.get(Student, 1)
 
-    def test_delete_student(self):
+    def test_add_student_with_invalid_semester(self, test_db):
+        # Given
+        student = Student(
+            name="John", surname="Daw", degree=DegreeName.bachelor, semester=10
+        )
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+
+        # When
+        with pytest.raises(SemesterError):
+            students_operations.add_student(student)
+
+    def test_add_student_with_invalid_name(self, test_db):
+        # Given
+        student = Student(
+            name="", surname="Daw", degree=DegreeName.bachelor, semester=4
+        )
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+
+        # When
+        with pytest.raises(StudentValidationError):
+            students_operations.add_student(student)
+
+    def test_add_student_with_invalid_surname(self, test_db):
+        # Given
+        student = Student(
+            name="John", surname="", degree=DegreeName.bachelor, semester=4
+        )
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+
+        # When
+        with pytest.raises(StudentValidationError):
+            students_operations.add_student(student)
+
+    def test_delete_student(self, test_db):
         # Given
         student = Student(
             id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
         )
-        students_storage = MockStudentsStorage([student])
+        test_db.add(student)
+        test_db.commit()
+        students_storage = DBStorageHandler(session=test_db)
         students_operations = StudentsOperations(students_storage)
 
         # When
         students_operations.delete_student(student.id)
 
         # Then
-        assert students_storage.students == []
+        assert test_db.get(Student, 1) is None
 
-    def test_update_student(self):
+    def test_delete_student_with_invalid_id(self, test_db):
+        # Given
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+
+        # When
+        with pytest.raises(NotFoundError):
+            students_operations.delete_student(1)
+
+    def test_update_student(self, test_db):
         # Given
         student = Student(
             id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
         )
-        students_storage = MockStudentsStorage([student])
+        test_db.add(student)
+        test_db.commit()
+
+        students_storage = DBStorageHandler(session=test_db)
         students_operations = StudentsOperations(students_storage)
 
         updated_student = Student(
@@ -129,4 +232,22 @@ class TestStudentsOperations:
         students_operations.update_student(student.id, updated_student)
 
         # Then
-        assert students_storage.students == [updated_student]
+        assert test_db.get(Student, 1) == updated_student
+
+    def test_update_student_with_invalid_id(self, test_db):
+        # Given
+        students_storage = DBStorageHandler(session=test_db)
+        students_operations = StudentsOperations(students_storage)
+
+        # When
+        with pytest.raises(NotFoundError):
+            students_operations.update_student(
+                1,
+                Student(
+                    id=1,
+                    name="Jane",
+                    surname="Smith",
+                    degree=DegreeName.bachelor,
+                    semester=6,
+                ),
+            )

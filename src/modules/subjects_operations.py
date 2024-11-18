@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import ValidationError
 
-from src.common.models import BaseSubject, Subject
+from src.common.models import Subject
 from src.common.storage.storage import StorageHandler
 
 
@@ -44,7 +44,7 @@ class SubjectsOperations:
 
         return subjects
 
-    def add_subject(self, subject: BaseSubject) -> Subject:
+    def add_subject(self, subject: Subject) -> Subject:
         # TODO: Validate subject
         # TODO: Make the function async save
 
@@ -70,7 +70,7 @@ class SubjectsOperations:
         # TODO: Handle non-existing subject
         self.storage_handler.delete(id)
 
-    def update_subject(self, id: int, updated_subject: BaseSubject) -> Subject:
+    def update_subject(self, id: int, updated_subject: Subject) -> Subject:
         """Update an existing subject.
 
         Args:

@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from src.common.models import BaseSubject, DegreeName, Subject
+from src.common.models import DegreeName, Subject
 from src.common.storage.storage import StorageHandler
 from src.modules.subjects_operations import SubjectDataError, SubjectsOperations
 
@@ -61,7 +61,7 @@ class TestSubjectsOperations:
 
     def test_get_subjects_raises_error_when_invalid_subject_data(self):
         # Given
-        subject = BaseSubject(name="Math", semester=4, degree=DegreeName.bachelor)
+        subject = Subject(name="Math", semester=4, degree=DegreeName.bachelor)
         subjects_storage = MockSubjectsStorage([subject])
         subjects_operations = SubjectsOperations(subjects_storage)
 
@@ -71,7 +71,7 @@ class TestSubjectsOperations:
 
     def test_add_subject(self):
         # Given
-        subject = BaseSubject(name="Math", semester=4, degree=DegreeName.bachelor)
+        subject = Subject(name="Math", semester=4, degree=DegreeName.bachelor)
         subjects_storage = MockSubjectsStorage([])
         subjects_operations = SubjectsOperations(subjects_storage)
         want = Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor)
@@ -115,7 +115,7 @@ class TestSubjectsOperations:
 
         # When
         subjects_operations.update_subject(
-            1, BaseSubject(name="Physics", semester=4, degree=DegreeName.bachelor)
+            1, Subject(name="Physics", semester=4, degree=DegreeName.bachelor)
         )
 
         # Then
@@ -128,7 +128,7 @@ class TestSubjectsOperations:
 
         # When
         subjects_operations.update_subject(
-            1, BaseSubject(name="Physics", semester=4, degree=DegreeName.bachelor)
+            1, Subject(name="Physics", semester=4, degree=DegreeName.bachelor)
         )
 
         # Then
