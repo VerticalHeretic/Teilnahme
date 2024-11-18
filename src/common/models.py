@@ -18,14 +18,11 @@ class Student(SQLModel, table=True):
     semester: int
 
 
-class BaseSubject(BaseModel):
+class Subject(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
     name: str
     semester: int
     degree: DegreeName
-
-
-class Subject(BaseSubject):
-    id: int
 
 
 class BaseClassroom(BaseModel):
