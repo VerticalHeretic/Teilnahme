@@ -6,23 +6,12 @@ from src.common.errors import NotFoundError
 from src.common.models import DegreeName, Student
 from src.common.storage.db_storage import DBStorageHandlerDep
 from src.common.storage.storage import NewStorageHandler
-
-
-class SemesterError(Exception):
-    """Exception raised when a student's semester number is invalid.
-    
-    This includes cases where:
-    - Bachelor semester is greater than 6
-    - Master semester is greater than 4 
-    - Semester is less than or equal to 0
-    """
-
-    pass
+from src.common.validators import validate_semester
 
 
 class StudentValidationError(Exception):
     """Exception raised when student data is invalid.
-    
+
     This includes cases where:
     - Name is less than 2 characters
     - Surname is less than 2 characters
@@ -34,7 +23,7 @@ class StudentValidationError(Exception):
 class StudentsOperations:
     """Class for managing student operations.
 
-    This class provides methods for CRUD (Create, Read, Update, Delete) operations on students 
+    This class provides methods for CRUD (Create, Read, Update, Delete) operations on students
     using a storage handler. It includes validation of student data and semester numbers.
 
     Attributes:
@@ -74,7 +63,7 @@ class StudentsOperations:
         """
         conditions = [Student.degree == degree_name]
         if semester is not None:
-            self._validate_semester(degree_name, semester)
+            validate_semester(degree_name, semester)
             conditions.append(Student.semester == semester)
 
         return self.storage_handler.get_all_where(Student, conditions)
@@ -139,29 +128,15 @@ class StudentsOperations:
 
         Raises:
             NotFoundError: When student with given ID is not found
+            StudentValidationError: If updated student data is invalid
+            SemesterError: If semester number is invalid for the degree
         """
+        self._validate_student(updated_student)
         try:
             self.storage_handler.update(id, updated_student)
         except ValueError:
             raise NotFoundError(f"Student with id {id} not found")
         return updated_student
-
-    def _validate_semester(self, degree_name: DegreeName, semester: int):
-        """Validate that a semester number is valid for a given degree.
-
-        Args:
-            degree_name (DegreeName): Name of the degree program
-            semester (int): Semester number to validate
-
-        Raises:
-            SemesterError: If semester number is invalid for the degree
-        """
-        if degree_name == DegreeName.bachelor and semester > 6:
-            raise SemesterError("Bachelor degree has only 6 semesters")
-        elif degree_name == DegreeName.master and semester > 4:
-            raise SemesterError("Master degree has only 4 semesters")
-        elif semester <= 0:
-            raise SemesterError("Semester number must be greater than 0")
 
     def _validate_student(self, student: Student):
         """Validate student data.
@@ -177,7 +152,7 @@ class StudentsOperations:
             StudentValidationError: If student data is invalid
             SemesterError: If semester number is invalid for the degree
         """
-        self._validate_semester(student.degree, student.semester)
+        validate_semester(student.degree, student.semester)
 
         if len(student.name) < 2 or len(student.surname) < 2:
             raise StudentValidationError(

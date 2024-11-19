@@ -1,11 +1,10 @@
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
-from src.common.errors import NotFoundError
+from src.common.errors import NotFoundError, SemesterError
 from src.common.models import DegreeName, Student
 from src.common.storage.db_storage import DBStorageHandler
 from src.modules.students_operations import (
-    SemesterError,
     StudentsOperations,
     StudentValidationError,
 )
