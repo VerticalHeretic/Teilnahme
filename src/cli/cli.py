@@ -1,11 +1,14 @@
 import argparse
 
+from sqlmodel import Session
+
 from src.cli.students_parser import StudentsParser
-from src.common.storage.csv_storage import CSVStorageHandler, StorageHandler
+from src.common.storage.db_storage import DBStorageHandler, create_db_and_tables, engine
+from src.common.storage.storage import NewStorageHandler
 from src.modules.students_operations import StudentsOperations
 
 
-def setup_parser(storage_handler: StorageHandler):
+def setup_parser(storage_handler: NewStorageHandler):
     parser = argparse.ArgumentParser(description="Student Management System")
     subparser = parser.add_subparsers(dest="command")
 
@@ -16,8 +19,9 @@ def setup_parser(storage_handler: StorageHandler):
 
 
 def main():
-    # Initialize your operations classes
-    storage_handler = CSVStorageHandler("students.csv")  # Initialize your storage
+    create_db_and_tables()
+    session = Session(engine)
+    storage_handler = DBStorageHandler(session=session)
     parser = setup_parser(storage_handler)
     args = parser.parse_args()
 

@@ -1,4 +1,4 @@
-from src.common.models import BaseStudent, DegreeName
+from src.common.models import DegreeName, Student
 from src.modules.students_operations import StudentsOperations
 
 
@@ -7,7 +7,7 @@ class StudentsParser:
         self.students_operations = students_operations
 
     def handle_students_add(self, args):
-        student = BaseStudent(
+        student = Student(
             name=args.name,
             surname=args.surname,
             degree=args.degree,
@@ -38,7 +38,7 @@ class StudentsParser:
             update_data["semester"] = args.semester
 
         if update_data:
-            self.students_operations.update_student(args.id, BaseStudent(**update_data))
+            self.students_operations.update_student(args.id, Student(**update_data))
             print(f"Updated student with id: {args.id}")
         else:
             print("No updates provided")
