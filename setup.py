@@ -3,9 +3,11 @@ from setuptools import find_packages, setup
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
+print(requirements)
+
 setup(
     name="teilnahme",
-    version="0.0.1",
+    version="0.0.2",
     author="Łukasz Stachnik",
     author_email="lukasz.marek.stachnik@gmail.com",
     description="Attendance management system for university",
@@ -25,4 +27,3 @@ setup(
     ],
     python_requires=">=3.12",
 )
-
