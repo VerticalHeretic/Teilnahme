@@ -1,43 +1,27 @@
-from typing import Any, Dict, List
-
 import pytest
+from sqlmodel import Session, SQLModel, create_engine
 
+from src.common.errors import NotFoundError, SemesterError
 from src.common.models import DegreeName, Subject
-from src.common.storage.storage import StorageHandler
-from src.modules.subjects_operations import SubjectDataError, SubjectsOperations
+from src.common.storage.db_storage import DBStorageHandler
+from src.modules.subjects_operations import SubjectsOperations, SubjectValidationError
 
 
-class MockSubjectsStorage(StorageHandler):
-    def __init__(self, subjects: List[Subject]):
-        self.subjects = subjects
-
-    def save(self, data: Dict[str, Any]):
-        self.subjects.append(Subject(**data))
-
-    def load(self) -> List[Dict[str, Any]]:
-        return [s.model_dump() for s in self.subjects]
-
-    def delete(self, id: int):
-        self.subjects = [s for s in self.subjects if s.id != id]
-
-    def update(self, id: int, data: Dict[str, Any]):
-        index = next(
-            (index for index, subject in enumerate(self.subjects) if subject.id == id),
-            None,
-        )
-
-        if index is not None:
-            self.subjects[index] = Subject(**data)
-
-    def generate_id(self) -> int:
-        return len(self.subjects) + 1
+@pytest.fixture
+def test_db():
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        yield session
 
 
 class TestSubjectsOperations:
-    def test_get_subjects(self):
+    def test_get_subjects(self, test_db):
         # Given
         subject = Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor)
-        subjects_storage = MockSubjectsStorage([subject])
+        test_db.add(subject)
+        test_db.commit()
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
         want = [subject]
 
@@ -47,9 +31,9 @@ class TestSubjectsOperations:
         # Then
         assert got == want
 
-    def test_get_empty_list_when_no_subjects(self):
+    def test_get_empty_list_when_no_subjects(self, test_db):
         # Given
-        subjects_storage = MockSubjectsStorage([])
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
         want = []
 
@@ -59,59 +43,124 @@ class TestSubjectsOperations:
         # Then
         assert got == want
 
-    def test_get_subjects_raises_error_when_invalid_subject_data(self):
+    def test_get_subject_by_id(self, test_db):
         # Given
-        subject = Subject(name="Math", semester=4, degree=DegreeName.bachelor)
-        subjects_storage = MockSubjectsStorage([subject])
+        subject = Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor)
+        test_db.add(subject)
+        test_db.commit()
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
 
         # When
-        with pytest.raises(SubjectDataError):
-            subjects_operations.get_subjects()
+        got = subjects_operations.get_subject(1)
 
-    def test_add_subject(self):
+        # Then
+        assert got == subject
+
+    def test_get_non_existing_subject(self, test_db):
+        # Given
+        subjects_storage = DBStorageHandler(session=test_db)
+        subjects_operations = SubjectsOperations(subjects_storage)
+
+        # When
+        with pytest.raises(NotFoundError):
+            subjects_operations.get_subject(1)
+
+    def test_get_subjects_in_degree(self, test_db):
+        # Given
+        subjects = [
+            Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor),
+            Subject(id=2, name="Physics", semester=4, degree=DegreeName.master),
+        ]
+        for subject in subjects:
+            test_db.add(subject)
+        test_db.commit()
+        subjects_storage = DBStorageHandler(session=test_db)
+        subjects_operations = SubjectsOperations(subjects_storage)
+
+        # When
+        got = subjects_operations.get_subjects_in_degree(DegreeName.bachelor)
+
+        # Then
+        assert got == [subjects[0]]
+
+    def test_get_subjects_in_degree_with_semester(self, test_db):
+        subjects = [
+            Subject(id=1, name="Math", semester=2, degree=DegreeName.bachelor),
+            Subject(id=2, name="Physics", semester=4, degree=DegreeName.master),
+        ]
+        for subject in subjects:
+            test_db.add(subject)
+        test_db.commit()
+        subjects_storage = DBStorageHandler(session=test_db)
+        subjects_operations = SubjectsOperations(subjects_storage)
+
+        # When
+        got = subjects_operations.get_subjects_in_degree(DegreeName.bachelor, 2)
+
+        # Then
+        assert got == [subjects[0]]
+
+    def test_add_subject(self, test_db):
         # Given
         subject = Subject(name="Math", semester=4, degree=DegreeName.bachelor)
-        subjects_storage = MockSubjectsStorage([])
+        test_db.add(subject)
+        test_db.commit()
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
-        want = Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor)
 
         # When
         got = subjects_operations.add_subject(subject)
 
         # Then
-        assert got == want
-        assert subjects_storage.subjects == [want]
+        assert got == subject
 
-    def test_delete_subject(self):
+    def test_add_subject_invalid_semester(self, test_db):
+        subject = Subject(name="Math", semester=10, degree=DegreeName.bachelor)
+        subjects_storage = DBStorageHandler(session=test_db)
+        subjects_operations = SubjectsOperations(subjects_storage)
+
+        with pytest.raises(SemesterError):
+            subjects_operations.add_subject(subject)
+
+    def test_add_subject_invalid_name(self, test_db):
+        subject = Subject(name="", semester=4, degree=DegreeName.bachelor)
+        subjects_storage = DBStorageHandler(session=test_db)
+        subjects_operations = SubjectsOperations(subjects_storage)
+
+        with pytest.raises(SubjectValidationError):
+            subjects_operations.add_subject(subject)
+
+    def test_delete_subject(self, test_db):
         # Given
         subject = Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor)
-        subjects_storage = MockSubjectsStorage([subject])
+        test_db.add(subject)
+        test_db.commit()
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
 
         # When
         subjects_operations.delete_subject(1)
 
         # Then
-        assert subjects_storage.subjects == []
+        assert test_db.query(Subject).count() == 0
 
-    def test_delete_non_existing_subject(self):
+    def test_delete_non_existing_subject(self, test_db):
         # Given
-        subjects_storage = MockSubjectsStorage([])
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
 
         # When
-        subjects_operations.delete_subject(1)
+        with pytest.raises(NotFoundError):
+            subjects_operations.delete_subject(1)
 
-        # Then
-        assert subjects_storage.subjects == []
-
-    def test_update_subject(self):
+    def test_update_subject(self, test_db):
         # Given
         subject = Subject(id=1, name="Math", semester=4, degree=DegreeName.bachelor)
-        subjects_storage = MockSubjectsStorage([subject])
+        test_db.add(subject)
+        test_db.commit()
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
-        want = Subject(id=1, name="Physics", semester=4, degree=DegreeName.bachelor)
 
         # When
         subjects_operations.update_subject(
@@ -119,17 +168,15 @@ class TestSubjectsOperations:
         )
 
         # Then
-        assert subjects_storage.subjects == [want]
+        assert test_db.get(Subject, 1) == subject
 
-    def test_update_non_existing_subject(self):
+    def test_update_non_existing_subject(self, test_db):
         # Given
-        subjects_storage = MockSubjectsStorage([])
+        subjects_storage = DBStorageHandler(session=test_db)
         subjects_operations = SubjectsOperations(subjects_storage)
 
         # When
-        subjects_operations.update_subject(
-            1, Subject(name="Physics", semester=4, degree=DegreeName.bachelor)
-        )
-
-        # Then
-        assert subjects_storage.subjects == []
+        with pytest.raises(NotFoundError):
+            subjects_operations.update_subject(
+                1, Subject(name="Physics", semester=4, degree=DegreeName.bachelor)
+            )

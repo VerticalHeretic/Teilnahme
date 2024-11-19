@@ -1,13 +1,17 @@
 from typing import List
 
-from pydantic import ValidationError
+from src.common.errors import NotFoundError
+from src.common.models import DegreeName, Subject
+from src.common.storage.storage import NewStorageHandler
+from src.common.validators import validate_semester
 
-from src.common.models import Subject
-from src.common.storage.storage import StorageHandler
 
+class SubjectValidationError(Exception):
+    """Exception raised for errors in subject data.
 
-class SubjectDataError(Exception):
-    """Exception raised for errors in subject data."""
+    This includes cases where:
+    - Subject name is less than 2 characters long
+    """
 
     pass
 
@@ -15,14 +19,18 @@ class SubjectDataError(Exception):
 class SubjectsOperations:
     """Class for managing subject operations.
 
-    This class provides methods for CRUD operations on subjects using a storage handler.
+    This class provides methods for CRUD (Create, Read, Update, Delete) operations on subjects
+    using a storage handler. It includes validation of subject data and semester numbers.
+
+    Attributes:
+        storage_handler (NewStorageHandler): Handler for subject data storage operations
     """
 
-    def __init__(self, storage_handler: StorageHandler):
+    def __init__(self, storage_handler: NewStorageHandler):
         """Initialize SubjectsOperations with a storage handler.
 
         Args:
-            storage_handler (StorageHandler): Handler for subject data storage operations
+            storage_handler (NewStorageHandler): Handler for subject data storage operations
         """
         self.storage_handler = storage_handler
 
@@ -30,57 +38,121 @@ class SubjectsOperations:
         """Get list of all subjects.
 
         Returns:
-            List[Subject]: List of all subjects
-
-        Raises:
-            SubjectDataError: When subject data is invalid
+            List[Subject]: List of all subjects in storage
         """
-        try:
-            subjects = [
-                Subject(**subject_data) for subject_data in self.storage_handler.load()
-            ]
-        except ValidationError as e:
-            raise SubjectDataError(f"Invalid subject data format: {str(e)}") from e
+        return self.storage_handler.get_all(Subject)
 
-        return subjects
-
-    def add_subject(self, subject: Subject) -> Subject:
-        # TODO: Validate subject
-        # TODO: Make the function async save
-
-        """Add a new subject.
+    def get_subject(self, id: int) -> Subject:
+        """Get a subject by its ID.
 
         Args:
-            subject (BaseSubject): Subject data to add
+            id (int): ID of the subject to retrieve
 
         Returns:
-            Subject: The newly created subject with generated ID
+            Subject: The subject with the specified ID
+
+        Raises:
+            NotFoundError: When subject with given ID is not found
         """
-        subject = Subject(id=self.storage_handler.generate_id(), **subject.model_dump())
-        self.storage_handler.save(subject.model_dump())
+        try:
+            return self.storage_handler.get_by_id(id, Subject)
+        except ValueError:
+            raise NotFoundError(f"Subject with id {id} not found")
+
+    def get_subjects_in_degree(
+        self, degree_name: DegreeName, semester: int | None = None
+    ) -> List[Subject]:
+        """Get list of all subjects in a given degree and optionally filtered by semester.
+
+        Args:
+            degree_name (DegreeName): Name of the degree program (bachelor/master)
+            semester (int | None, optional): Semester number to filter by. Defaults to None.
+
+        Returns:
+            List[Subject]: List of subjects matching the criteria
+
+        Raises:
+            SemesterError: If the specified semester is invalid for the degree
+        """
+        conditions = [Subject.degree == degree_name]
+        if semester is not None:
+            validate_semester(degree_name, semester)
+            conditions.append(Subject.semester == semester)
+
+        return self.storage_handler.get_all_where(Subject, conditions)
+
+    def add_subject(self, subject: Subject) -> Subject:
+        """Add a new subject to storage.
+
+        Args:
+            subject (Subject): Subject data to add
+
+        Returns:
+            Subject: The newly created subject
+
+        Raises:
+            SubjectValidationError: If subject data is invalid
+            SemesterError: If semester number is invalid for the degree
+        """
+        self._validate_subject(subject)
+        self.storage_handler.create(subject)
         return subject
 
     def delete_subject(self, id: int):
-        """Delete a subject by ID.
+        """Delete a subject from storage.
 
         Args:
             id (int): ID of the subject to delete
-        """
 
-        # TODO: Handle non-existing subject
-        self.storage_handler.delete(id)
+        Raises:
+            NotFoundError: When subject with given ID is not found
+        """
+        try:
+            self.storage_handler.delete(id, Subject)
+        except ValueError:
+            raise NotFoundError(f"Subject with id {id} not found")
 
     def update_subject(self, id: int, updated_subject: Subject) -> Subject:
-        """Update an existing subject.
+        """Update an existing subject in storage.
 
         Args:
             id (int): ID of the subject to update
-            updated_subject (BaseSubject): New subject data
+            updated_subject (Subject): New subject data
 
         Returns:
             Subject: The updated subject
+
+        Raises:
+            NotFoundError: When subject with given ID is not found
+            SubjectValidationError: If updated subject data is invalid
+            SemesterError: If semester number is invalid for the degree
         """
-        updated_subject = Subject(id=id, **updated_subject.model_dump())
-        # TODO: Handle non-existing subject
-        self.storage_handler.update(id, updated_subject.model_dump())
+        self._validate_subject(updated_subject)
+
+        try:
+            self.storage_handler.update(id, updated_subject)
+        except ValueError:
+            raise NotFoundError(f"Subject with id {id} not found")
+
         return updated_subject
+
+    def _validate_subject(self, subject: Subject):
+        """Validate subject data.
+
+        Checks:
+        - Semester number is valid for the degree
+        - Name is at least 2 characters long
+
+        Args:
+            subject (Subject): Subject data to validate
+
+        Raises:
+            SubjectValidationError: If subject data is invalid
+            SemesterError: If semester number is invalid for the degree
+        """
+        validate_semester(subject.degree, subject.semester)
+
+        if len(subject.name) < 2:
+            raise SubjectValidationError(
+                "Subject name must be at least 2 characters long"
+            )
