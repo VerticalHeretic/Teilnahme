@@ -7,7 +7,7 @@ print(requirements)
 
 setup(
     name="teilnahme",
-    version="0.0.2",
+    version="0.0.3",
     author="Łukasz Stachnik",
     author_email="lukasz.marek.stachnik@gmail.com",
     description="Attendance management system for university",
