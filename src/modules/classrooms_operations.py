@@ -1,15 +1,8 @@
 from typing import List
 
-from pydantic import ValidationError
-
-from src.common.models import BaseClassroom, Classroom
-from src.common.storage.storage import StorageHandler
-
-
-class ClassroomDataError(Exception):
-    """Exception raised for errors in classroom data."""
-
-    pass
+from src.common.errors import NotFoundError
+from src.common.models import Classroom
+from src.common.storage.storage import NewStorageHandler
 
 
 class ClassroomsOperations:
@@ -18,7 +11,7 @@ class ClassroomsOperations:
     This class provides methods for CRUD operations on classrooms using a storage handler.
     """
 
-    def __init__(self, storage_handler: StorageHandler):
+    def __init__(self, storage_handler: NewStorageHandler):
         """Initialize ClassroomsOperations with a storage handler.
 
         Args:
@@ -35,17 +28,9 @@ class ClassroomsOperations:
         Raises:
             ClassroomDataError: When classroom data is invalid
         """
-        try:
-            classrooms = [
-                Classroom(**classroom_data)
-                for classroom_data in self.storage_handler.load()
-            ]
-        except ValidationError as e:
-            raise ClassroomDataError(f"Invalid classroom data format: {str(e)}") from e
+        return self.storage_handler.get_all(Classroom)
 
-        return classrooms
-
-    def add_classroom(self, classroom: BaseClassroom) -> Classroom:
+    def add_classroom(self, classroom: Classroom) -> Classroom:
         """Add a new classroom.
 
         Args:
@@ -54,11 +39,7 @@ class ClassroomsOperations:
         Returns:
             Classroom: The newly created classroom with generated ID
         """
-        classroom = Classroom(
-            id=self.storage_handler.generate_id(), **classroom.model_dump()
-        )
-        self.storage_handler.save(classroom.model_dump())
-        return classroom
+        return self.storage_handler.create(classroom)
 
     def delete_classroom(self, id: int):
         """Delete a classroom by ID.
@@ -66,10 +47,13 @@ class ClassroomsOperations:
         Args:
             id (int): ID of the classroom to delete
         """
-        # TODO: Handle non-existing classroom check in delete
-        self.storage_handler.delete(id)
 
-    def update_classroom(self, id: int, updated_classroom: BaseClassroom) -> Classroom:
+        try:
+            self.storage_handler.delete(id, Classroom)
+        except ValueError:
+            raise NotFoundError(f"Classroom with ID {id} not found")
+
+    def update_classroom(self, id: int, updated_classroom: Classroom) -> Classroom:
         """Update an existing classroom.
 
         Args:
@@ -79,7 +63,10 @@ class ClassroomsOperations:
         Returns:
             Classroom: The updated classroom
         """
-        updated_classroom = Classroom(id=id, **updated_classroom.model_dump())
-        # TODO: Handle non-existing classroom check in update
-        self.storage_handler.update(id, updated_classroom.model_dump())
+
+        try:
+            self.storage_handler.update(id, updated_classroom)
+        except ValueError:
+            raise NotFoundError(f"Classroom with ID {id} not found")
+
         return updated_classroom

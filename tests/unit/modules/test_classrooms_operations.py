@@ -1,49 +1,41 @@
-from typing import Any, Dict, List
+import pytest
+from sqlmodel import Session, SQLModel, create_engine
 
-from src.common.models import BaseClassroom, Classroom
-from src.common.storage.storage import StorageHandler
+from src.common.errors import NotFoundError
+from src.common.models import Classroom, DegreeName, Student
+from src.common.storage.db_storage import DBStorageHandler
 from src.modules.classrooms_operations import ClassroomsOperations
 
+example_students: list[Student] = [
+    Student(id=1, name="John", surname="Daw", degree=DegreeName.bachelor, semester=4),
+    Student(id=2, name="Joe", surname="Daw", degree=DegreeName.bachelor, semester=4),
+    Student(id=3, name="Hank", surname="Daw", degree=DegreeName.bachelor, semester=4),
+]
 
-class MockClassroomStorage(StorageHandler):
-    def __init__(self, classrooms: List[Classroom]):
-        self.classrooms = classrooms
 
-    def save(self, data: Dict[str, Any]):
-        self.classrooms.append(Classroom(**data))
-
-    def load(self) -> List[Dict[str, Any]]:
-        return [c.model_dump() for c in self.classrooms]
-
-    def delete(self, id: int):
-        self.classrooms = [c for c in self.classrooms if c.id != id]
-
-    def update(self, id: int, data: Dict[str, Any]):
-        index = next(
-            (
-                index
-                for index, classroom in enumerate(self.classrooms)
-                if classroom.id == id
-            ),
-            None,
-        )
-        if index is not None:
-            self.classrooms[index] = Classroom(**data)
-
-    def generate_id(self) -> int:
-        return len(self.classrooms) + 1
+@pytest.fixture
+def test_db():
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        for student in example_students:
+            session.add(student)
+        session.commit()
+        yield session
 
 
 class TestClassroomsOperations:
-    def test_get_classrooms(self):
+    def test_get_classrooms(self, test_db):
         # Given
-        classrooms = [
-            Classroom(id=1, students_ids=[1, 2], subject_id=1),
-            Classroom(id=2, students_ids=[3, 4], subject_id=1),
+        want = [
+            Classroom(id=1, students_ids=example_students, subject_id=1),
+            Classroom(id=2, students_ids=example_students, subject_id=2),
         ]
-        classroom_storage = MockClassroomStorage(classrooms)
+        classroom_storage = DBStorageHandler(test_db)
+        for classroom in want:
+            test_db.add(classroom)
+        test_db.commit()
         classrooms_operations = ClassroomsOperations(classroom_storage)
-        want = classrooms
 
         # When
         got = classrooms_operations.get_classrooms()
@@ -51,9 +43,9 @@ class TestClassroomsOperations:
         # Then
         assert got == want
 
-    def test_get_classrooms_empty_list_when_no_classrooms(self):
+    def test_get_classrooms_empty_list_when_no_classrooms(self, test_db):
         # Given
-        classroom_storage = MockClassroomStorage([])
+        classroom_storage = DBStorageHandler(test_db)
         classrooms_operations = ClassroomsOperations(classroom_storage)
         want = []
 
@@ -63,23 +55,24 @@ class TestClassroomsOperations:
         # Then
         assert got == want
 
-    def test_add_classroom(self):
+    def test_add_classroom(self, test_db):
         # Given
-        classroom = BaseClassroom(students_ids=[1, 2], subject_id=1)
-        classroom_storage = MockClassroomStorage([])
+        classroom = Classroom(students=example_students, subject_id=1)
+        classroom_storage = DBStorageHandler(test_db)
         classrooms_operations = ClassroomsOperations(classroom_storage)
-        want = Classroom(id=1, **classroom.model_dump())
 
         # When
         got = classrooms_operations.add_classroom(classroom)
 
         # Then
-        assert got == want
+        assert got == classroom
 
-    def test_delete_classroom(self):
+    def test_delete_classroom(self, test_db):
         # Given
-        classroom = Classroom(id=1, students_ids=[1, 2], subject_id=1)
-        classroom_storage = MockClassroomStorage([classroom])
+        classroom = Classroom(id=1, students=example_students, subject_id=1)
+        classroom_storage = DBStorageHandler(test_db)
+        test_db.add(classroom)
+        test_db.commit()
         classrooms_operations = ClassroomsOperations(classroom_storage)
         want = []
 
@@ -89,9 +82,9 @@ class TestClassroomsOperations:
         # Then
         assert classroom_storage.classrooms == want
 
-    def test_delete_classroom_when_classroom_does_not_exist(self):
+    def test_delete_classroom_when_classroom_does_not_exist(self, test_db):
         # Given
-        classroom_storage = MockClassroomStorage([])
+        classroom_storage = DBStorageHandler(test_db)
         classrooms_operations = ClassroomsOperations(classroom_storage)
         want = []
 
@@ -101,27 +94,28 @@ class TestClassroomsOperations:
         # Then
         assert classroom_storage.classrooms == want
 
-    def test_update_classroom(self):
+    def test_update_classroom(self, test_db):
         # Given
-        classroom = Classroom(id=1, students_ids=[1, 2], subject_id=1)
-        classroom_storage = MockClassroomStorage([classroom])
+        classroom = Classroom(id=1, students_ids=example_students, subject_id=1)
+        classroom_storage = DBStorageHandler(test_db)
+        test_db.add(classroom)
+        test_db.commit()
         classrooms_operations = ClassroomsOperations(classroom_storage)
-        want = BaseClassroom(students_ids=[3, 4], subject_id=1)
+        want = Classroom(id=1, students_ids=example_students, subject_id=2)
 
         # When
-        classrooms_operations.update_classroom(1, want)
+        classrooms_operations.update_classroom(classroom.id, want)
 
         # Then
-        assert classroom_storage.classrooms[0] == Classroom(id=1, **want.model_dump())
+        assert test_db.get(Classroom, 1) == want
 
-    def test_update_classroom_when_classroom_does_not_exist(self):
+    def test_update_classroom_when_classroom_does_not_exist(self, test_db):
         # Given
-        classroom_storage = MockClassroomStorage([])
+        classroom_storage = DBStorageHandler(test_db)
         classrooms_operations = ClassroomsOperations(classroom_storage)
-        want = BaseClassroom(students_ids=[3, 4], subject_id=1)
-
-        # When
-        classrooms_operations.update_classroom(1, want)
 
         # Then
-        assert classroom_storage.classrooms == []
+        with pytest.raises(NotFoundError):
+            classrooms_operations.update_classroom(
+                1, Classroom(id=1, students=example_students, subject_id=2)
+            )

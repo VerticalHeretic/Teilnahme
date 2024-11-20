@@ -1,13 +1,20 @@
 from datetime import datetime
 from enum import Enum
+from typing import List
 
-from pydantic import BaseModel
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class DegreeName(str, Enum):
     master = "Master"
     bachelor = "Bachelor"
+
+
+class StudentClassroomLink(SQLModel, table=True):
+    student_id: int = Field(default=None, foreign_key="student.id", primary_key=True)
+    classroom_id: int = Field(
+        default=None, foreign_key="classroom.id", primary_key=True
+    )
 
 
 class Student(SQLModel, table=True):
@@ -16,6 +23,17 @@ class Student(SQLModel, table=True):
     surname: str
     degree: DegreeName
     semester: int
+    classrooms: List["Classroom"] = Relationship(
+        back_populates="students", link_model=StudentClassroomLink
+    )
+
+
+class Classroom(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    subject_id: int
+    students: List[Student] = Relationship(
+        back_populates="classrooms", link_model=StudentClassroomLink
+    )
 
 
 class Subject(SQLModel, table=True):
@@ -25,20 +43,8 @@ class Subject(SQLModel, table=True):
     degree: DegreeName
 
 
-class BaseClassroom(BaseModel):
-    students_ids: list[int]
-    subject_id: int
-
-
-class Classroom(BaseClassroom):
-    id: int
-
-
-class BaseAttendenceRecord(BaseModel):
+class AttendenceRecord(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
     student_id: int
     classroom_id: int
     date: datetime
-
-
-class AttendenceRecord(BaseAttendenceRecord):
-    id: int
