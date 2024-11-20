@@ -27,6 +27,6 @@ jobs:
 
     - name: Publish to TestPyPI
       env:
-        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TWINE_TEST_PASSWORD }}
       run: make upload_to_testpypi
