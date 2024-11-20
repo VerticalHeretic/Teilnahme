@@ -3,10 +3,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
 from fastapi.exceptions import HTTPException
 
+from src.common.errors import SemesterError
 from src.common.models import DegreeName, Student
 from src.common.storage.db_storage import create_db_and_tables
 from src.modules.students_operations import (
-    SemesterError,
     StudentsOperationsDep,
     StudentValidationError,
 )

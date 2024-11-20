@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import List
 
-from pydantic import ValidationError
-
-from src.common.models import AttendenceRecord, BaseAttendenceRecord
-from src.common.storage.storage import StorageHandler
+from src.common.errors import NotFoundError
+from src.common.models import AttendenceRecord
+from src.common.storage.storage import NewStorageHandler
 
 
 class AttendenceDataError(Exception):
@@ -16,14 +15,18 @@ class AttendenceDataError(Exception):
 class AttendenceOperations:
     """Class for managing attendance operations.
 
-    This class provides methods for CRUD operations on attendance records using a storage handler.
+    This class provides methods for CRUD (Create, Read, Update, Delete) operations on attendance records
+    using a storage handler. It allows filtering records by classroom, student, and date.
+
+    Attributes:
+        storage_handler (NewStorageHandler): Handler for attendance data storage operations
     """
 
-    def __init__(self, storage_handler: StorageHandler):
+    def __init__(self, storage_handler: NewStorageHandler):
         """Initialize AttendenceOperations with a storage handler.
 
         Args:
-            storage_handler (StorageHandler): Handler for attendance data storage operations
+            storage_handler (NewStorageHandler): Handler for attendance data storage operations
         """
         self.storage_handler = storage_handler
 
@@ -37,14 +40,12 @@ class AttendenceOperations:
 
         Returns:
             List[AttendenceRecord]: List of attendance records for the classroom
+
+        Raises:
+            NotFoundError: When classroom with given ID is not found
         """
-        attendence_records = self.__get_all_attendence_records()
-        filtered_by_classroom_attendence_records = [
-            record
-            for record in attendence_records
-            if record.classroom_id == classroom_id
-        ]
-        return filtered_by_classroom_attendence_records
+        conditions = [AttendenceRecord.classroom_id == classroom_id]
+        return self.storage_handler.get_all_where(AttendenceRecord, conditions)
 
     def get_attendence_records_by_student(
         self, student_id: int
@@ -57,11 +58,8 @@ class AttendenceOperations:
         Returns:
             List[AttendenceRecord]: List of attendance records for the student
         """
-        attendence_records = self.__get_all_attendence_records()
-        filtered_by_student_attendence_records = [
-            record for record in attendence_records if record.student_id == student_id
-        ]
-        return filtered_by_student_attendence_records
+        conditions = [AttendenceRecord.student_id == student_id]
+        return self.storage_handler.get_all_where(AttendenceRecord, conditions)
 
     def get_attendence_records_by_date(self, date: datetime) -> List[AttendenceRecord]:
         """Get list of attendance records for a specific date.
@@ -72,55 +70,35 @@ class AttendenceOperations:
         Returns:
             List[AttendenceRecord]: List of attendance records for the date
         """
-        attendence_records = self.__get_all_attendence_records()
-        filtered_by_date_attendence_records = [
-            record for record in attendence_records if record.date == date
-        ]
-        return filtered_by_date_attendence_records
-
-    def __get_all_attendence_records(self) -> List[AttendenceRecord]:
-        """Get list of all attendance records.
-
-        Returns:
-            List[AttendenceRecord]: List of all attendance records
-
-        Raises:
-            AttendenceDataError: When attendance record data is invalid
-        """
-        try:
-            attendence_records = [
-                AttendenceRecord(**attendence_record_data)
-                for attendence_record_data in self.storage_handler.load()
-            ]
-        except ValidationError as e:
-            raise AttendenceDataError(
-                f"Invalid attendence record data format: {str(e)}"
-            ) from e
-
-        return attendence_records
+        conditions = [AttendenceRecord.date == date]
+        return self.storage_handler.get_all_where(AttendenceRecord, conditions)
 
     def add_attendence_record(
-        self, attendence_record: BaseAttendenceRecord
+        self, attendence_record: AttendenceRecord
     ) -> AttendenceRecord:
         """Add a new attendance record.
 
         Args:
-            attendence_record (BaseAttendenceRecord): Attendance record data to add
+            attendence_record (AttendenceRecord): Attendance record data to add
 
         Returns:
             AttendenceRecord: The newly created attendance record with generated ID
+
+        Raises:
+            AttendenceDataError: If the attendance record data is invalid
         """
-        attendence_record = AttendenceRecord(
-            id=self.storage_handler.generate_id(), **attendence_record.model_dump()
-        )
-        self.storage_handler.save(attendence_record.model_dump())
-        return attendence_record
+        return self.storage_handler.create(attendence_record)
 
     def delete_attendence_record(self, id: int):
         """Delete an attendance record by ID.
 
         Args:
             id (int): ID of the attendance record to delete
+
+        Raises:
+            NotFoundError: When attendance record with given ID is not found
         """
-        # TODO: Handle non-existing attendence record in delete
-        self.storage_handler.delete(id)
+        try:
+            self.storage_handler.delete(id, AttendenceRecord)
+        except ValueError:
+            raise NotFoundError(f"Attendence record with ID {id} not found")
