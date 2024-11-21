@@ -84,6 +84,34 @@ class TestClassroomsOperations:
         # Ensure the classroom is persisted
         assert test_db.get(Classroom, got.id) is not None
 
+    def test_add_students_to_classroom(self, test_db):
+        # Given
+        classroom = Classroom(subject_id=1)
+        test_db.add(classroom)
+        test_db.commit()
+        test_db.refresh(classroom)
+
+        classroom_storage = DBStorageHandler(test_db)
+        classrooms_operations = ClassroomsOperations(classroom_storage)
+        student = Student(
+            name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
+        )
+
+        # When
+        got = classrooms_operations.add_students_to_classroom(classroom.id, [student])
+
+        # Then
+        assert got.students == [student]
+
+    def test_add_students_to_classroom_when_classroom_does_not_exist(self, test_db):
+        # Given
+        classroom_storage = DBStorageHandler(test_db)
+        classrooms_operations = ClassroomsOperations(classroom_storage)
+
+        # Then
+        with pytest.raises(NotFoundError):
+            classrooms_operations.add_students_to_classroom(1, [Student()])
+
     def test_delete_classroom(self, test_db):
         # Given
         student = Student(
