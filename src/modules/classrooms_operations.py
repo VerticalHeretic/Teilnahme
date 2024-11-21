@@ -1,7 +1,7 @@
 from typing import List
 
 from src.common.errors import NotFoundError
-from src.common.models import Classroom
+from src.common.models import Classroom, Student
 from src.common.storage.storage import NewStorageHandler
 
 
@@ -40,6 +40,20 @@ class ClassroomsOperations:
             Classroom: The newly created classroom with generated ID
         """
         return self.storage_handler.create(classroom)
+
+    def add_students_to_classroom(self, classroom_id: int, students: List[Student]):
+        """Add students to a classroom.
+
+        Args:
+            classroom_id (int): ID of the classroom to add students to
+            students (List[Student]): List of students to add
+        """
+        try:
+            classroom = self.storage_handler.get_by_id(classroom_id, Classroom)
+            classroom.students.extend(students)
+            return self.storage_handler.update(classroom_id, classroom)
+        except ValueError:
+            raise NotFoundError(f"Classroom with ID {classroom_id} not found")
 
     def delete_classroom(self, id: int):
         """Delete a classroom by ID.
