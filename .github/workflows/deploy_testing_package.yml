@@ -2,8 +2,8 @@ name: Publish to PyPI
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-test'
 
 jobs:
   build:
@@ -12,6 +12,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Extract version from tag
+      id: get_version
+      run: |
+        # Remove 'v' prefix and '-test' suffix
+        TAG=${GITHUB_REF#refs/tags/v}
+        VERSION=${TAG%-test}
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+    
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -24,6 +32,8 @@ jobs:
 
     - name: Build distribution
       run: make build_distribution
+      env:
+        PACKAGE_VERSION: ${{ env.VERSION }}
 
     - name: Publish to TestPyPI
       env:

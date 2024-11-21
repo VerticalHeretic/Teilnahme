@@ -1,13 +1,19 @@
+import os
+
 from setuptools import find_packages, setup
 
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
-print(requirements)
+version = os.getenv(
+    "VERSION", "0.0.0"
+)  # Fallback to '0.0.0'version = os.getenv('PACKAGE_VERSION', '0.0.0')  # Fallback to '0.0.0'
+
+
 
 setup(
     name="teilnahme",
-    version="0.0.3",
+    version=version,
     author="Łukasz Stachnik",
     author_email="lukasz.marek.stachnik@gmail.com",
     description="Attendance management system for university",
