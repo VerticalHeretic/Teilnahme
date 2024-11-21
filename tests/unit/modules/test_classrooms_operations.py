@@ -112,6 +112,36 @@ class TestClassroomsOperations:
         with pytest.raises(NotFoundError):
             classrooms_operations.add_students_to_classroom(1, [Student()])
 
+    def test_delete_student_from_classroom(self, test_db):
+        # Given
+        student = Student(
+            name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
+        )
+        classroom = Classroom(students=[student], subject_id=1)
+        test_db.add(classroom)
+        test_db.commit()
+        test_db.refresh(classroom)
+
+        classroom_storage = DBStorageHandler(test_db)
+        classrooms_operations = ClassroomsOperations(classroom_storage)
+
+        # When
+        got = classrooms_operations.delete_student_from_classroom(
+            classroom.id, student.id
+        )
+
+        # Then
+        assert got.students == []
+
+    def test_delete_student_from_classroom_when_classroom_does_not_exist(self, test_db):
+        # Given
+        classroom_storage = DBStorageHandler(test_db)
+        classrooms_operations = ClassroomsOperations(classroom_storage)
+
+        # Then
+        with pytest.raises(NotFoundError):
+            classrooms_operations.delete_student_from_classroom(1, 1)
+
     def test_delete_classroom(self, test_db):
         # Given
         student = Student(

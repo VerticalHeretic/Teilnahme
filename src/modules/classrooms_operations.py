@@ -55,6 +55,16 @@ class ClassroomsOperations:
         except ValueError:
             raise NotFoundError(f"Classroom with ID {classroom_id} not found")
 
+    def delete_student_from_classroom(self, classroom_id: int, student_id: int):
+        try:
+            classroom = self.storage_handler.get_by_id(classroom_id, Classroom)
+            classroom.students = [
+                student for student in classroom.students if student.id != student_id
+            ]
+            return self.storage_handler.update(classroom_id, classroom)
+        except ValueError:
+            raise NotFoundError(f"Classroom with ID {classroom_id} not found")
+
     def delete_classroom(self, id: int):
         """Delete a classroom by ID.
 
