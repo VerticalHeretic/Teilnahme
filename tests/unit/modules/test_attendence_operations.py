@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel.pool import StaticPool
 
 from src.common.models import AttendenceRecord
 from src.common.storage.db_storage import DBStorageHandler
@@ -10,7 +11,13 @@ from src.modules.attendence_operations import AttendenceOperations
 
 @pytest.fixture
 def test_db():
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine(
+        "sqlite://",  # In-memory SQLite database URL - creates temporary database that exists only during test execution
+        connect_args={
+            "check_same_thread": False
+        },  # SQLite-specific setting that allows multiple threads to access the same connection
+        poolclass=StaticPool,  # Uses a single connection for all operations - ideal for testing as it maintains consistent state
+    )
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
@@ -33,7 +40,7 @@ class TestAttendenceOperations:
         got = attendence_operations.get_attendence_records_by_classroom(1)
 
         # Then
-        assert got == attendence_records[0]
+        assert got == [attendence_records[0]]
 
     def test_get_attendence_records_for_classroom_when_no_attendence_records(
         self, test_db
@@ -88,7 +95,7 @@ class TestAttendenceOperations:
         got = attendence_operations.get_attendence_records_by_date(date1)
 
         # Then
-        assert got == want
+        assert got == [want]
 
     def test_add_attendence_record(self, test_db):
         # Given
@@ -113,7 +120,6 @@ class TestAttendenceOperations:
         test_db.add(attendence_record)
         test_db.commit()
         attendence_operations = AttendenceOperations(DBStorageHandler(test_db))
-        want = []
 
         # When
         attendence_operations.delete_attendence_record(1)
