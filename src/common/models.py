@@ -27,6 +27,9 @@ class Student(SQLModel, table=True):
         back_populates="students", link_model=StudentClassroomLink
     )
 
+    def __str__(self) -> str:
+        return f"{self.name} {self.surname} - {self.degree.value} (Semester {self.semester})"
+
 
 class Classroom(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
