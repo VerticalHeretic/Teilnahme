@@ -131,9 +131,37 @@ class StudentsOperations:
             StudentValidationError: If updated student data is invalid
             SemesterError: If semester number is invalid for the degree
         """
-        self._validate_student(updated_student)
         try:
-            self.storage_handler.update(id, updated_student)
+            student = self.get_student(id)
+        except NotFoundError:
+            raise NotFoundError(f"Student with id {id} not found")
+
+        student.name = (
+            updated_student.name
+            if updated_student.name and len(updated_student.name) >= 2
+            else student.name
+        )
+        student.surname = (
+            updated_student.surname
+            if updated_student.surname and len(updated_student.surname) >= 2
+            else student.surname
+        )
+
+        student.degree = (
+            updated_student.degree
+            if updated_student.degree is not None
+            else student.degree
+        )
+
+        student.semester = (
+            updated_student.semester
+            if updated_student.semester is not None
+            else student.semester
+        )
+
+        self._validate_student(student)
+        try:
+            self.storage_handler.update(id, student)
         except ValueError:
             raise NotFoundError(f"Student with id {id} not found")
         return updated_student
