@@ -35,6 +35,7 @@ jobs:
         run: pytest -vv --cov=src 
   
   lint:
+    needs: test
     runs-on: "ubuntu-latest"
 
     permissions:
