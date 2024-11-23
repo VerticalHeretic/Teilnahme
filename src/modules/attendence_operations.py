@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
@@ -12,6 +13,7 @@ class AttendenceDataError(Exception):
     pass
 
 
+@dataclass
 class AttendenceOperations:
     """Class for managing attendance operations.
 
@@ -22,13 +24,7 @@ class AttendenceOperations:
         storage_handler (NewStorageHandler): Handler for attendance data storage operations
     """
 
-    def __init__(self, storage_handler: NewStorageHandler):
-        """Initialize AttendenceOperations with a storage handler.
-
-        Args:
-            storage_handler (NewStorageHandler): Handler for attendance data storage operations
-        """
-        self.storage_handler = storage_handler
+    storage_handler: NewStorageHandler
 
     def get_attendence_records_by_classroom(
         self, classroom_id: int
