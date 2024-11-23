@@ -160,7 +160,7 @@ class StudentsOperations:
             self.storage_handler.update(id, student)
         except ValueError:
             raise NotFoundError(f"Student with id {id} not found")
-        return updated_student
+        return student
 
     def _validate_student(self, student: Student):
         """Validate student data.
