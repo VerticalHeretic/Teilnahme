@@ -2,6 +2,7 @@ import pytest
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
+from build.lib.src.modules.students_operations import StudentsOperations
 from src.common.errors import NotFoundError
 from src.common.models import Classroom, DegreeName, Student
 from src.common.storage.db_storage import DBStorageHandler
@@ -28,8 +29,14 @@ def test_db():
         yield session
 
 
+@pytest.fixture
+def test_students_operations(test_db) -> StudentsOperations:
+    storage_handler = DBStorageHandler(test_db)
+    return StudentsOperations(storage_handler)
+
+
 class TestClassroomsOperations:
-    def test_get_classrooms(self, test_db):
+    def test_get_classrooms(self, test_db, test_students_operations):
         # Given
         want = [
             Classroom(students=example_students, subject_id=1),
@@ -39,7 +46,9 @@ class TestClassroomsOperations:
         for classroom in want:
             test_db.add(classroom)
         test_db.commit()
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # When
         got = classrooms_operations.get_classrooms()
@@ -47,10 +56,14 @@ class TestClassroomsOperations:
         # Then
         assert got == want
 
-    def test_get_classrooms_empty_list_when_no_classrooms(self, test_db):
+    def test_get_classrooms_empty_list_when_no_classrooms(
+        self, test_db, test_students_operations
+    ):
         # Given
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
         want = []
 
         # When
@@ -59,7 +72,7 @@ class TestClassroomsOperations:
         # Then
         assert got == want
 
-    def test_add_classroom(self, test_db):
+    def test_add_classroom(self, test_db, test_students_operations):
         # Given
         students = [
             Student(name="John", surname="Daw", degree=DegreeName.bachelor, semester=4),
@@ -74,7 +87,9 @@ class TestClassroomsOperations:
 
         classroom = Classroom(students=students, subject_id=1)
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # When
         got = classrooms_operations.add_classroom(classroom)
@@ -84,7 +99,7 @@ class TestClassroomsOperations:
         # Ensure the classroom is persisted
         assert test_db.get(Classroom, got.id) is not None
 
-    def test_add_students_to_classroom(self, test_db):
+    def test_add_students_to_classroom(self, test_db, test_students_operations):
         # Given
         classroom = Classroom(subject_id=1)
         test_db.add(classroom)
@@ -92,7 +107,9 @@ class TestClassroomsOperations:
         test_db.refresh(classroom)
 
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
         student = Student(
             name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
         )
@@ -103,16 +120,20 @@ class TestClassroomsOperations:
         # Then
         assert got.students == [student]
 
-    def test_add_students_to_classroom_when_classroom_does_not_exist(self, test_db):
+    def test_add_students_to_classroom_when_classroom_does_not_exist(
+        self, test_db, test_students_operations
+    ):
         # Given
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # Then
         with pytest.raises(NotFoundError):
             classrooms_operations.add_students_to_classroom(1, [Student()])
 
-    def test_delete_student_from_classroom(self, test_db):
+    def test_delete_student_from_classroom(self, test_db, test_students_operations):
         # Given
         student = Student(
             name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
@@ -123,7 +144,9 @@ class TestClassroomsOperations:
         test_db.refresh(classroom)
 
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # When
         got = classrooms_operations.delete_student_from_classroom(
@@ -133,16 +156,20 @@ class TestClassroomsOperations:
         # Then
         assert got.students == []
 
-    def test_delete_student_from_classroom_when_classroom_does_not_exist(self, test_db):
+    def test_delete_student_from_classroom_when_classroom_does_not_exist(
+        self, test_db, test_students_operations
+    ):
         # Given
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # Then
         with pytest.raises(NotFoundError):
             classrooms_operations.delete_student_from_classroom(1, 1)
 
-    def test_delete_classroom(self, test_db):
+    def test_delete_classroom(self, test_db, test_students_operations):
         # Given
         student = Student(
             name="John", surname="Daw", degree=DegreeName.bachelor, semester=4
@@ -155,7 +182,9 @@ class TestClassroomsOperations:
         classroom_storage = DBStorageHandler(test_db)
         test_db.add(classroom)
         test_db.commit()
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # When
         classrooms_operations.delete_classroom(1)
@@ -163,22 +192,28 @@ class TestClassroomsOperations:
         # Then
         assert test_db.get(Classroom, 1) is None
 
-    def test_delete_classroom_when_classroom_does_not_exist(self, test_db):
+    def test_delete_classroom_when_classroom_does_not_exist(
+        self, test_db, test_students_operations
+    ):
         # Given
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # When / Then
         with pytest.raises(NotFoundError):
             classrooms_operations.delete_classroom(1)
 
-    def test_update_classroom(self, test_db):
+    def test_update_classroom(self, test_db, test_students_operations):
         # Given
         classroom = Classroom(id=1, students_ids=example_students, subject_id=1)
         classroom_storage = DBStorageHandler(test_db)
         test_db.add(classroom)
         test_db.commit()
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
         want = Classroom(id=1, students_ids=example_students, subject_id=2)
 
         # When
@@ -187,10 +222,14 @@ class TestClassroomsOperations:
         # Then
         assert test_db.get(Classroom, 1) == want
 
-    def test_update_classroom_when_classroom_does_not_exist(self, test_db):
+    def test_update_classroom_when_classroom_does_not_exist(
+        self, test_db, test_students_operations
+    ):
         # Given
         classroom_storage = DBStorageHandler(test_db)
-        classrooms_operations = ClassroomsOperations(classroom_storage)
+        classrooms_operations = ClassroomsOperations(
+            classroom_storage, test_students_operations
+        )
 
         # Then
         with pytest.raises(NotFoundError):

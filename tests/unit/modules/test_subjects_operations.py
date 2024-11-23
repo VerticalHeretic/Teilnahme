@@ -1,5 +1,5 @@
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 
 from src.common.errors import NotFoundError, SemesterError
 from src.common.models import DegreeName, Subject
@@ -143,7 +143,7 @@ class TestSubjectsOperations:
         subjects_operations.delete_subject(1)
 
         # Then
-        assert test_db.query(Subject).count() == 0
+        assert test_db.exec(select(Subject)).all() == []
 
     def test_delete_non_existing_subject(self, test_db):
         # Given
