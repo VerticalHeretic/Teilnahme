@@ -15,7 +15,7 @@ from src.modules.subjects_operations import SubjectsOperations
 
 
 def setup_parsers(storage_handler: NewStorageHandler):
-    parser = argparse.ArgumentParser(description="Student Management System")
+    parser = argparse.ArgumentParser(description="Attendance Management System 🏫")
     subparser = parser.add_subparsers(dest="command")
 
     students_operations = StudentsOperations(storage_handler)

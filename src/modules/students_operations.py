@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Annotated, List
 
 from fastapi import Depends
@@ -20,6 +21,7 @@ class StudentValidationError(Exception):
     pass
 
 
+@dataclass
 class StudentsOperations:
     """Class for managing student operations.
 
@@ -30,13 +32,7 @@ class StudentsOperations:
         storage_handler (NewStorageHandler): Handler for student data storage operations
     """
 
-    def __init__(self, storage_handler: NewStorageHandler):
-        """Initialize StudentsOperations with a storage handler.
-
-        Args:
-            storage_handler (NewStorageHandler): Handler for student data storage operations
-        """
-        self.storage_handler = storage_handler
+    storage_handler: NewStorageHandler
 
     def get_students(self) -> List[Student]:
         """Get list of all students.

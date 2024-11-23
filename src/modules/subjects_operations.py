@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List
 
 from src.common.errors import NotFoundError
@@ -16,6 +17,7 @@ class SubjectValidationError(Exception):
     pass
 
 
+@dataclass
 class SubjectsOperations:
     """Class for managing subject operations.
 
@@ -26,13 +28,7 @@ class SubjectsOperations:
         storage_handler (NewStorageHandler): Handler for subject data storage operations
     """
 
-    def __init__(self, storage_handler: NewStorageHandler):
-        """Initialize SubjectsOperations with a storage handler.
-
-        Args:
-            storage_handler (NewStorageHandler): Handler for subject data storage operations
-        """
-        self.storage_handler = storage_handler
+    storage_handler: NewStorageHandler
 
     def get_subjects(self) -> List[Subject]:
         """Get list of all subjects.
