@@ -38,6 +38,9 @@ class Classroom(SQLModel, table=True):
         back_populates="classrooms", link_model=StudentClassroomLink
     )
 
+    def __str__(self) -> str:
+        return f"Classroom for subject with id: {self.subject_id} with {len(self.students)} students"
+
 
 class Subject(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
@@ -54,3 +57,6 @@ class AttendenceRecord(SQLModel, table=True):
     student_id: int
     classroom_id: int
     date: datetime
+
+    def __str__(self) -> str:
+        return f"Attendance: {self.student_id} in classroom: {self.classroom_id} on {self.date}"
