@@ -2,11 +2,13 @@ import argparse
 
 from sqlmodel import Session
 
+from src.cli.parsers.attendence_parser import AttendenceParser
 from src.cli.parsers.classrooms_parser import ClassroomsParser
 from src.cli.parsers.students_parser import StudentsParser
 from src.cli.parsers.subjects_parser import SubjectsParser
 from src.common.storage.db_storage import DBStorageHandler, create_db_and_tables, engine
 from src.common.storage.storage import NewStorageHandler
+from src.modules.attendence_operations import AttendenceOperations
 from src.modules.classrooms_operations import ClassroomsOperations
 from src.modules.students_operations import StudentsOperations
 from src.modules.subjects_operations import SubjectsOperations
@@ -27,6 +29,9 @@ def setup_parsers(storage_handler: NewStorageHandler):
         ClassroomsOperations(storage_handler, students_operations)
     )
     classrooms_parser.setup_classrooms_parsers(subparser)
+
+    attendence_parser = AttendenceParser(AttendenceOperations(storage_handler))
+    attendence_parser.setup_attendence_parsers(subparser)
 
     return parser
 
