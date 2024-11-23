@@ -2,11 +2,11 @@ import pytest
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from build.lib.src.modules.students_operations import StudentsOperations
 from src.common.errors import NotFoundError
 from src.common.models import Classroom, DegreeName, Student
 from src.common.storage.db_storage import DBStorageHandler
 from src.modules.classrooms_operations import ClassroomsOperations
+from src.modules.students_operations import StudentsOperations
 
 example_students: list[Student] = [
     Student(name="John", surname="Daw", degree=DegreeName.bachelor, semester=4),
