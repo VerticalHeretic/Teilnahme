@@ -45,6 +45,9 @@ class Subject(SQLModel, table=True):
     semester: int
     degree: DegreeName
 
+    def __str__(self) -> str:
+        return f"{self.name} - for: {self.degree.value} degree at semester: {self.semester}"
+
 
 class AttendenceRecord(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)

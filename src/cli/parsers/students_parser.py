@@ -90,8 +90,13 @@ class StudentsParser:
         self.console.print(f"[green]Added student: {result}[/green]")
 
     def handle_students_delete(self, args):
-        self.students_operations.delete_student(args.id)
-        self.console.print(f"[green]Deleted student with id: {args.id}[/green]")
+        try:
+            self.students_operations.delete_student(args.id)
+            self.console.print(f"[green]Deleted student with id: {args.id}[/green]")
+        except NotFoundError:
+            self.error_console.print(
+                f"[red]Student with id {args.id} doesn't exist[/red]"
+            )
 
     def handle_students_update(self, args):
         # Create update dict with only provided fields
@@ -144,7 +149,7 @@ class StudentsParser:
         students_get_parser = students_subparser.add_parser(
             "get", help="Get all students"
         )
-        students_get_parser.add_argument("--id", type=int, help="Get student by id")
+        students_get_parser.add_argument("--id", type=int, help="Student ID")
         students_get_parser.add_argument(
             "--degree", type=DegreeName, help="Get students by degree"
         )
