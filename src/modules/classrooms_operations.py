@@ -1,23 +1,21 @@
+from dataclasses import dataclass
 from typing import List
 
+from build.lib.src.modules.students_operations import StudentsOperations
 from src.common.errors import NotFoundError
 from src.common.models import Classroom, Student
 from src.common.storage.storage import NewStorageHandler
 
 
+@dataclass
 class ClassroomsOperations:
     """Class for managing classroom operations.
 
     This class provides methods for CRUD operations on classrooms using a storage handler.
     """
 
-    def __init__(self, storage_handler: NewStorageHandler):
-        """Initialize ClassroomsOperations with a storage handler.
-
-        Args:
-            storage_handler (StorageHandler): Handler for classroom data storage operations
-        """
-        self.storage_handler = storage_handler
+    storage_handler: NewStorageHandler
+    students_operations: StudentsOperations
 
     def get_classrooms(self) -> List[Classroom]:
         """Get list of all classrooms.
@@ -29,6 +27,72 @@ class ClassroomsOperations:
             ClassroomDataError: When classroom data is invalid
         """
         return self.storage_handler.get_all(Classroom)
+
+    def get_classroom(self, id: int) -> Classroom:
+        """Get a classroom by its ID.
+
+        Args:
+            id (int): ID of the classroom to retrieve
+
+        Returns:
+            Classroom: The classroom with the specified ID
+
+        Raises:
+            NotFoundError: When classroom with given ID is not found
+        """
+        try:
+            return self.storage_handler.get_by_id(id, Classroom)
+        except ValueError:
+            raise NotFoundError(f"Classroom with ID {id} not found")
+
+    def get_classrooms_for_subject(self, subject_id: int) -> List[Classroom]:
+        """Get list of all classrooms for a given subject.
+
+        Args:
+            subject_id (int): ID of the subject to get classrooms for
+
+        Returns:
+            List[Classroom]: List of classrooms associated with the subject
+        """
+        return self.storage_handler.get_all_where(
+            Classroom, [Classroom.subject_id == subject_id]
+        )
+
+    def get_classrooms_where_student(self, student_id: int) -> List[Classroom]:
+        """Get list of all classrooms that contain a specific student.
+
+        Args:
+            student_id (int): ID of the student to find classrooms for
+
+        Returns:
+            List[Classroom]: List of classrooms that have the specified student enrolled
+        """
+        return self.storage_handler.get_all_where(
+            Classroom, [Classroom.students.any(Student.id == student_id)]
+        )
+
+    def add_student_to_classroom(self, classroom_id: int, student_id: int):
+        """Add a student to a classroom.
+
+        Args:
+            classroom_id (int): ID of the classroom to add student to
+            student_id (int): ID of the student to add
+
+        Returns:
+            Classroom: The updated classroom with the student added
+
+        Raises:
+            NotFoundError: When either the student or classroom with given IDs is not found
+        """
+        try:
+            student = self.students_operations.get_student(student_id)
+            classroom = self.storage_handler.get_by_id(classroom_id, Classroom)
+            classroom.students.append(student)
+            return self.storage_handler.update(classroom_id, classroom)
+        except ValueError:
+            raise NotFoundError(
+                f"Student with ID {student_id} or classroom with ID {classroom_id} not found"
+            )
 
     def add_classroom(self, classroom: Classroom) -> Classroom:
         """Add a new classroom.
@@ -56,6 +120,18 @@ class ClassroomsOperations:
             raise NotFoundError(f"Classroom with ID {classroom_id} not found")
 
     def delete_student_from_classroom(self, classroom_id: int, student_id: int):
+        """Delete a student from a classroom.
+
+        Args:
+            classroom_id (int): ID of the classroom to delete student from
+            student_id (int): ID of the student to delete
+
+        Returns:
+            Classroom: The updated classroom with the student removed
+
+        Raises:
+            NotFoundError: When the classroom with given ID is not found
+        """
         try:
             classroom = self.storage_handler.get_by_id(classroom_id, Classroom)
             classroom.students = [
