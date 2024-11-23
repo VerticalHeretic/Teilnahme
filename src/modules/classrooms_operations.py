@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import List
 
-from build.lib.src.modules.students_operations import StudentsOperations
 from src.common.errors import NotFoundError
 from src.common.models import Classroom, Student
 from src.common.storage.storage import NewStorageHandler
+from src.modules.students_operations import StudentsOperations
 
 
 @dataclass
