@@ -11,22 +11,21 @@ router = APIRouter(prefix="/students", tags=["students"])
 
 
 @router.get("/")
-async def get_students(students_operations: StudentsOperationsDep) -> list[Student]:
-    return students_operations.get_students()
-
-
-@router.get("/{degree_name}")
-async def get_students_in_degree(
+async def get_students(
     students_operations: StudentsOperationsDep,
-    degree_name: DegreeName,
+    degree: DegreeName | None = None,
     semester: int | None = None,
 ) -> list[Student]:
-    try:
-        return students_operations.get_students_in_degree(degree_name, semester)
-    except SemesterError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        ) from e
+    if degree is not None and semester is not None:
+        try:
+            return students_operations.get_students_in_degree(degree, semester)
+        except SemesterError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+            ) from e
+    elif degree is not None:
+        return students_operations.get_students_in_degree(degree)
+    return students_operations.get_students()
 
 
 @router.post("/", response_model=Student)

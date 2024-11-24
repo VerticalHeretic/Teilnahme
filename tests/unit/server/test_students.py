@@ -76,7 +76,7 @@ def test_get_students_in_degree(test_db, client):
     test_db.commit()
 
     # When
-    response = client.get("/students/Bachelor")
+    response = client.get("/students?degree=Bachelor")
 
     # Then
     assert response.status_code == 200
@@ -110,7 +110,7 @@ def test_get_students_in_degree_with_semester(test_db, client):
     test_db.commit()
 
     # When
-    response = client.get("/students/Bachelor?semester=3")
+    response = client.get("/students?degree=Bachelor&semester=3")
 
     # Then
     assert response.status_code == 200
@@ -126,11 +126,11 @@ def test_get_students_in_degree_with_semester(test_db, client):
 
 
 def test_get_students_in_degree_with_invalid_semester(client):
-    response = client.get("/students/Bachelor?semester=10")
+    response = client.get("/students?degree=Bachelor&semester=10")
     assert response.status_code == 400
     assert response.json() == {"detail": "Bachelor degree has only 6 semesters"}
 
-    response = client.get("/students/Master?semester=10")
+    response = client.get("/students?degree=Master&semester=10")
     assert response.status_code == 400
     assert response.json() == {"detail": "Master degree has only 4 semesters"}
 

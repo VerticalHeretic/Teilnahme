@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from src.common.storage.db_storage import create_db_and_tables
-from src.server.routers import students
+from src.server.routers import students, subjects
 
 
 @asynccontextmanager
@@ -14,8 +14,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Include the students router
+# Students
 app.include_router(students.router)
+
+# Subjects
+app.include_router(subjects.subjects_router)
+app.include_router(subjects.subject_router)
+
+# Classrooms
+
+# Attendance
 
 
 @app.get("/")

@@ -1,8 +1,11 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Annotated, List
+
+from fastapi import Depends
 
 from src.common.errors import NotFoundError
 from src.common.models import DegreeName, Subject
+from src.common.storage.db_storage import DBStorageHandlerDep
 from src.common.storage.storage import NewStorageHandler
 from src.common.validators import validate_semester
 
@@ -152,3 +155,25 @@ class SubjectsOperations:
             raise SubjectValidationError(
                 "Subject name must be at least 2 characters long"
             )
+
+
+def get_subjects_operations_with_db_storage_handler(
+    db_storage_handler: DBStorageHandlerDep,
+) -> SubjectsOperations:
+    """Create a SubjectsOperations instance with a database storage handler.
+
+    This is a FastAPI dependency that creates a SubjectsOperations instance
+    configured with a database storage handler.
+
+    Args:
+        db_storage_handler (DBStorageHandlerDep): Database storage handler dependency
+
+    Returns:
+        SubjectsOperations: New SubjectsOperations instance configured with the database handler
+    """
+    return SubjectsOperations(db_storage_handler)
+
+
+SubjectsOperationsDep = Annotated[
+    SubjectsOperations, Depends(get_subjects_operations_with_db_storage_handler)
+]
