@@ -85,7 +85,7 @@ def test_get_subjects_in_degree_and_semester_invalid(test_db, client):
 
 def test_add_subject(test_db, client):
     response = client.post(
-        "/subjects", json={"name": "Math", "degree": "Bachelor", "semester": 4}
+        "/subject", json={"name": "Math", "degree": "Bachelor", "semester": 4}
     )
     assert response.status_code == 200
     assert response.json() == {
@@ -102,7 +102,7 @@ def test_update_subject(test_db, client):
     test_db.commit()
 
     response = client.put(
-        f"/subjects/{subject.id}",
+        f"/subject/{subject.id}",
         json={"name": "Chemistry", "degree": "Bachelor", "semester": 4},
     )
     assert response.status_code == 200
@@ -116,7 +116,7 @@ def test_update_subject(test_db, client):
 
 def test_update_subject_not_found(test_db, client):
     response = client.put(
-        "/subjects/1", json={"name": "Chemistry", "degree": "Bachelor", "semester": 4}
+        "/subject/1", json={"name": "Chemistry", "degree": "Bachelor", "semester": 4}
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Subject with id 1 not found"}
@@ -127,11 +127,11 @@ def test_delete_subject(test_db, client):
     test_db.add(subject)
     test_db.commit()
 
-    response = client.delete(f"/subjects/{subject.id}")
+    response = client.delete(f"/subject/{subject.id}")
     assert response.status_code == 204
 
 
 def test_delete_subject_not_found(test_db, client):
-    response = client.delete("/subjects/1")
+    response = client.delete("/subject/1")
     assert response.status_code == 404
     assert response.json() == {"detail": "Subject with id 1 not found"}

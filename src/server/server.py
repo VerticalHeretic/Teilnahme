@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from src.common.storage.db_storage import create_db_and_tables
-from src.server.routers import students, subjects
+from src.server.routers import classrooms, students, subjects
 
 
 @asynccontextmanager
@@ -22,6 +22,8 @@ app.include_router(subjects.subjects_router)
 app.include_router(subjects.subject_router)
 
 # Classrooms
+app.include_router(classrooms.classrooms_router)
+app.include_router(classrooms.classroom_router)
 
 # Attendance
 

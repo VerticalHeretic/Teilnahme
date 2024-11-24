@@ -1,10 +1,13 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Annotated, List
+
+from fastapi import Depends
 
 from src.common.errors import NotFoundError
 from src.common.models import Classroom, Student
+from src.common.storage.db_storage import DBStorageHandlerDep
 from src.common.storage.storage import NewStorageHandler
-from src.modules.students_operations import StudentsOperations
+from src.modules.students_operations import StudentsOperations, StudentsOperationsDep
 
 
 @dataclass
@@ -164,9 +167,23 @@ class ClassroomsOperations:
             Classroom: The updated classroom
         """
 
-        try:
-            self.storage_handler.update(id, updated_classroom)
-        except ValueError:
-            raise NotFoundError(f"Classroom with ID {id} not found")
+        classroom = self.get_classroom(id)
 
-        return updated_classroom
+        classroom.subject_id = (
+            updated_classroom.subject_id
+            if updated_classroom.subject_id is not None
+            else classroom.subject_id
+        )
+
+        return self.storage_handler.update(id, classroom)
+
+
+def get_classrooms_operations_with_storage_handler(
+    db_storage_handler: DBStorageHandlerDep, students_operations: StudentsOperationsDep
+) -> ClassroomsOperations:
+    return ClassroomsOperations(db_storage_handler, students_operations)
+
+
+ClassroomsOperationsDep = Annotated[
+    ClassroomsOperations, Depends(get_classrooms_operations_with_storage_handler)
+]

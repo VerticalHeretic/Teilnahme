@@ -126,10 +126,7 @@ class SubjectsOperations:
             SubjectValidationError: If updated subject data is invalid
             SemesterError: If semester number is invalid for the degree
         """
-        try:
-            subject = self.get_subject(id)
-        except NotFoundError:
-            raise NotFoundError(f"Subject with id {id} not found")
+        subject = self.get_subject(id)
 
         subject.name = (
             updated_subject.name
@@ -150,12 +147,7 @@ class SubjectsOperations:
         )
 
         self._validate_subject(subject)
-        try:
-            self.storage_handler.update(id, subject)
-        except ValueError:
-            raise NotFoundError(f"Subject with id {id} not found")
-
-        return subject
+        return self.storage_handler.update(id, subject)
 
     def _validate_subject(self, subject: Subject):
         """Validate subject data.

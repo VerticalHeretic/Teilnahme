@@ -39,7 +39,7 @@ async def get_subject(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@subjects_router.post("/", response_model=Subject)
+@subject_router.post("/", response_model=Subject)
 async def add_subject(
     subjects_operations: SubjectsOperationsDep, subject: Subject
 ) -> Subject:
@@ -51,7 +51,7 @@ async def add_subject(
         ) from e
 
 
-@subjects_router.delete("/{subject_id}", status_code=status.HTTP_204_NO_CONTENT)
+@subject_router.delete("/{subject_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_subject(subjects_operations: SubjectsOperationsDep, subject_id: int):
     try:
         subjects_operations.delete_subject(subject_id)
@@ -59,7 +59,7 @@ async def delete_subject(subjects_operations: SubjectsOperationsDep, subject_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@subjects_router.put("/{subject_id}", status_code=status.HTTP_200_OK)
+@subject_router.put("/{subject_id}", status_code=status.HTTP_200_OK)
 async def update_subject(
     subjects_operations: SubjectsOperationsDep, subject_id: int, subject: Subject
 ):
