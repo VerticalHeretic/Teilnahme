@@ -18,9 +18,14 @@ async def get_subjects(
     semester: int | None = None,
 ) -> list[Subject]:
     if degree is not None and semester is not None:
-        return subjects_operations.get_subjects_in_degree(degree, semester)
+        try:
+            return subjects_operations.get_subjects_in_degree(degree, semester)
+        except SemesterError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+            ) from e
     elif degree is not None:
-        return subjects_operations.get_subjects_in_degree(degree, semester)
+        return subjects_operations.get_subjects_in_degree(degree)
     return subjects_operations.get_subjects()
 
 

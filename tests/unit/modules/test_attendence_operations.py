@@ -1,26 +1,8 @@
 from datetime import datetime
 
-import pytest
-from sqlmodel import Session, SQLModel, create_engine
-from sqlmodel.pool import StaticPool
-
 from src.common.models import AttendenceRecord
 from src.common.storage.db_storage import DBStorageHandler
 from src.modules.attendence_operations import AttendenceOperations
-
-
-@pytest.fixture
-def test_db():
-    engine = create_engine(
-        "sqlite://",  # In-memory SQLite database URL - creates temporary database that exists only during test execution
-        connect_args={
-            "check_same_thread": False
-        },  # SQLite-specific setting that allows multiple threads to access the same connection
-        poolclass=StaticPool,  # Uses a single connection for all operations - ideal for testing as it maintains consistent state
-    )
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
 
 
 class TestAttendenceOperations:

@@ -1,31 +1,4 @@
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlmodel import Session, SQLModel, StaticPool
-
 from src.common.models import DegreeName, Student
-from src.common.storage.db_storage import get_session
-from src.server.server import app
-
-
-@pytest.fixture
-def test_db():
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
-
-
-@pytest.fixture
-def client(test_db):
-    app.dependency_overrides[get_session] = lambda: test_db
-    test_client = TestClient(app)
-    yield test_client
-    app.dependency_overrides.clear()
 
 
 def test_get_students(test_db, client):
@@ -45,23 +18,7 @@ def test_get_students(test_db, client):
     # Then
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-    assert response.json() == [
-        {
-            "id": 1,
-            "name": "John",
-            "surname": "Daw",
-            "degree": "Bachelor",
-            "semester": 4,
-        },
-        {"id": 2, "name": "Joe", "surname": "Daw", "degree": "Bachelor", "semester": 4},
-        {
-            "id": 3,
-            "name": "Hank",
-            "surname": "Daw",
-            "degree": "Bachelor",
-            "semester": 4,
-        },
-    ]
+    assert response.json() == [student.model_dump() for student in students]
 
 
 def test_get_students_in_degree(test_db, client):

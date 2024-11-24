@@ -1,16 +1,7 @@
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
 
 from src.common.models import DegreeName, Student
 from src.common.storage.db_storage import DBStorageHandler
-
-
-@pytest.fixture
-def test_db():
-    engine = create_engine("sqlite:///:memory:")
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
 
 
 class TestDBStorageHandler:

@@ -1,5 +1,4 @@
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
 
 from src.common.errors import NotFoundError, SemesterError
 from src.common.models import DegreeName, Student
@@ -8,14 +7,6 @@ from src.modules.students_operations import (
     StudentsOperations,
     StudentValidationError,
 )
-
-
-@pytest.fixture
-def test_db():
-    engine = create_engine("sqlite:///:memory:")
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
 
 
 class TestStudentsOperations:

@@ -1,18 +1,10 @@
 import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import select
 
 from src.common.errors import NotFoundError, SemesterError
 from src.common.models import DegreeName, Subject
 from src.common.storage.db_storage import DBStorageHandler
 from src.modules.subjects_operations import SubjectsOperations, SubjectValidationError
-
-
-@pytest.fixture
-def test_db():
-    engine = create_engine("sqlite:///:memory:")
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
 
 
 class TestSubjectsOperations:

@@ -1,6 +1,4 @@
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
-from sqlmodel.pool import StaticPool
 
 from src.common.errors import NotFoundError
 from src.common.models import Classroom, DegreeName, Student
@@ -13,20 +11,6 @@ example_students: list[Student] = [
     Student(name="Joe", surname="Daw", degree=DegreeName.bachelor, semester=4),
     Student(name="Hank", surname="Daw", degree=DegreeName.bachelor, semester=4),
 ]
-
-
-@pytest.fixture
-def test_db():
-    engine = create_engine(
-        "sqlite://",  # In-memory SQLite database URL - creates temporary database that exists only during test execution
-        connect_args={
-            "check_same_thread": False
-        },  # SQLite-specific setting that allows multiple threads to access the same connection
-        poolclass=StaticPool,  # Uses a single connection for all operations - ideal for testing as it maintains consistent state
-    )
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
 
 
 @pytest.fixture
