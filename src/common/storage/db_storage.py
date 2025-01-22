@@ -1,3 +1,4 @@
+import os
 from typing import Annotated, List, Type
 
 from fastapi import Depends
@@ -6,8 +7,11 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from src.common.storage.storage import NewStorageHandler
 
 # SQLite database configuration
-sqllite_file_name = "database.db"
-engine = create_engine(f"sqlite:///{sqllite_file_name}")
+if os.getenv("ENVIRONMENT") == "development":
+    DATABASE_URL = "sqlite:///./database.db"
+else:
+    DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
 
 def get_session():
