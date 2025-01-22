@@ -1,7 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlmodel import Session, SQLModel, StaticPool
+from sqlmodel import Session, SQLModel, StaticPool, create_engine
 
 from src.common.models import DegreeName, Student
 from src.common.storage.db_storage import get_session
