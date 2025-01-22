@@ -12,7 +12,6 @@ permissions: read-all
 
 jobs:
   test:
-    environment: testing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +34,7 @@ jobs:
       - name: "Run tests with coverage"
         run: pytest -vv --cov=src
         env:
-          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          ENVIRONMENT: development
   
   lint:
     needs: test
